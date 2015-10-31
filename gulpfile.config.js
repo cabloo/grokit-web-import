@@ -17,7 +17,8 @@ var GulpConfig = (function () {
         this.JS = {
             vendor: [
                 comp + 'angular/angular.min.js',
-                comp + 'angular-json-tree/build/angular-json-tree.min.js'
+                comp + 'angular-json-tree/build/angular-json-tree.min.js',
+                comp + 'lodash/lodash.min.js'
             ]
         };
 
