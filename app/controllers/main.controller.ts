@@ -1,30 +1,67 @@
+interface Tree {
+    root: {};
+    current: {};
+}
+
 module gwi {
     'use strict';
 
     class MainController {
-        tree = {
-            test: 'hi',
-            nested: {
-                items: [
-                    {
-                        test: 'work'
-                    },
-                    {
-                        test: 'well'
-                    },
-                    {
-                        test: 'too'
-                    }
-                ]
-            }
-        };
-
-        parentNode = null;
+        $scope: { tree: Tree, $watch: Function, parentChosen: Boolean };
         parentNodeChoices = [];
         columns = [];
 
-        static $inject = [];
-        constructor() {
+        get tree(): Tree {
+            return this.$scope.tree;
+        }
+
+        set root(tree: Object) {
+            this.tree.root = tree;
+            this.tree.current = tree;
+        }
+
+        get root(): Object {
+            return this.tree.root;
+        }
+
+        set current(val: Object) {
+            this.tree.current = val;
+        }
+
+        get current(): Object {
+            return this.tree.current;
+        }
+
+        static $inject = ['$scope'];
+        constructor($scope) {
+            this.$scope = $scope;
+            this.$scope.tree = {
+                root: {},
+                current: {}
+            };
+            this.$scope.parentChosen = false;
+
+            this.current = this.root = {
+                test: 'hi',
+                nested: {
+                    items: [
+                        {
+                            test: 'work'
+                        },
+                        {
+                            test: 'well'
+                        },
+                        {
+                            test: 'too'
+                        }
+                    ]
+                }
+            };
+
+            this.$scope.$watch('tree.current', () => {
+                console.log('hmm');
+            });
+
             this.parentNodeChoices = this.nodeChoices();
         }
 
@@ -34,11 +71,7 @@ module gwi {
          * @return {array}
          */
         nodeChoices(tree?, root = "") {
-            tree = tree || this.tree;
-            console.log(tree, root);
-            var choices = [];
-
-            choices = _.flatten(_.map(tree, (value, key: string) => {
+            var map = (value: any, key: string) => {
                 var name = root == "" ? key : root + '.' + key;
 
                 if (_.isArray(value)) {
@@ -48,9 +81,16 @@ module gwi {
                 if (_.isObject(value) && value) {
                     return this.nodeChoices(value, name);
                 }
-            }));
+            };
 
-            return choices;
+            return _.flatten(_.filter(_.map(tree || this.root, map)));
+        }
+
+        chooseParentNode(i: number) {
+            var name = this.parentNodeChoices[i];
+            this.$scope.parentChosen = true;
+
+            this.current = _.get(this.root, name);
         }
     }
 

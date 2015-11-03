@@ -1,10 +1,19 @@
 # grokit-web-import
 Import JSON, XML, and YAML to grokit using a web interface.
 
-## Less
+## Setup
 
-```
-lessc less/main.less > public/assets/style.css
+```shell
+git clone git@github.com:cabloo/grokit-web-import.git
+cd grokit-web-import
+npm install
+sudo npm install -g bower
+bower install
+gulp
 ```
 
-## JS
+## Development
+
+```shell
+gulp watch
+```

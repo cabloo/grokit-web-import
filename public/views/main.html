@@ -8,7 +8,7 @@
                     </h3>
                 </div>
                 <div class="panel-body">
-                    <json-tree object="page.tree"></json-tree>
+                    <json-tree object="tree.current"></json-tree>
                 </div>
             </div>
         </div>
@@ -22,14 +22,14 @@
                 </div>
 
                 <div class="text-center panel-body" ng-show="!page.columns.length">
-                    <div ng-show="!page.parentNode">
+                    <div ng-show="!parentChosen">
                         Select the parent node (the one that contains the array of data):
 
-                        <ul ng-repeat="name in page.parentNodeChoices">
-                            <li>{{name}}</li>
+                        <ul class="parent-node-choices" ng-repeat="(key, name) in page.parentNodeChoices">
+                            <li><a ng-click="page.chooseParentNode(key)">{{name}}</a></li>
                         </ul>
                     </div>
-                    <div ng-show="page.parentNode">
+                    <div ng-show="parentChosen">
                         Select an attribute to export in the tree on the left.
                     </div>
                 </div>

@@ -1,6 +1,7 @@
 'use strict';
 
 var gulp = require('gulp'),
+    less = require('gulp-less'),
     debug = require('gulp-debug'),
     concat = require('gulp-concat'),
     inject = require('gulp-inject'),
@@ -66,7 +67,16 @@ gulp.task('css.vendor', function () {
     var sourceFiles = config.CSS.vendor;
 
     return gulp.src(sourceFiles)
-        .pipe(concat('vendor.css'))
+        .pipe(concat(config.CSS.vendor_file))
+        .pipe(gulp.dest(config.CSS.output));
+});
+
+gulp.task('css.site', function () {
+    var sourceFiles = config.CSS.input;
+
+    return gulp.src(sourceFiles)
+        .pipe(less())
+        .pipe(concat(config.CSS.main_file))
         .pipe(gulp.dest(config.CSS.output));
 });
 
@@ -88,4 +98,10 @@ gulp.task('watch', function() {
     gulp.watch([config.allTypeScript], ['ts-lint', 'compile-ts']);
 });
 
-gulp.task('default', ['js.vendor', 'css.vendor', 'ts-lint', 'compile-ts']);
+gulp.task('default', [
+    'js.vendor',
+    'css.vendor',
+    'css.site',
+    'ts-lint',
+    'compile-ts'
+]);

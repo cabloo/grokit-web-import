@@ -2,6 +2,7 @@
 var GulpConfig = (function () {
     function gulpConfig() {
         var APP = './app',
+            LESS = './less',
             PUBLIC = './public',
             ASSETS = PUBLIC + '/assets';
 
@@ -24,9 +25,14 @@ var GulpConfig = (function () {
 
         this.CSS = {
             output: ASSETS,
+            input: [
+                LESS + '/main.less'
+            ],
+            main_file: 'style.css',
             vendor: [
                 comp + 'angular-json-tree/build/angular-json-tree.css'
-            ]
+            ],
+            vendor_file: 'vendor.css'
         };
 
         this.typings = './typings/';
