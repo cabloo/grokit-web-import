@@ -4,7 +4,8 @@ var GulpConfig = (function () {
         var APP = './app',
             LESS = './less',
             PUBLIC = './public',
-            ASSETS = PUBLIC + '/assets';
+            ASSETS = PUBLIC + '/assets',
+            RAW = './assets';
 
         this.source = PUBLIC + '/';
         this.sourceApp = APP + '/';
@@ -14,12 +15,20 @@ var GulpConfig = (function () {
         this.allTypeScript = APP + '/**/*.ts';
 
         var comp = this.sourceApp + "components/";
+        var mod = this.sourceApp + "modules/";
 
         this.JS = {
             vendor: [
+                comp + 'jquery/dist/jquery.min.js',
+                comp + 'bootstrap/js/bootstrap.min.js',
                 comp + 'angular/angular.min.js',
                 comp + 'angular-json-tree/build/angular-json-tree.min.js',
-                comp + 'lodash/lodash.min.js'
+                comp + 'angular-route/angular-route.min.js',
+                comp + 'lodash/lodash.min.js',
+                mod + 'tree/service.js',
+                mod + 'tree/factory.js',
+                mod + 'tree/treeModule.js',
+                mod + 'contextMenu/contextMenuModule.js'
             ]
         };
 
@@ -30,9 +39,19 @@ var GulpConfig = (function () {
             ],
             main_file: 'style.css',
             vendor: [
+                comp + 'bootstrap/dist/css/bootstrap.min.css',
+                comp + 'bootstrap/dist/css/bootstrap-theme.min.css',
                 comp + 'angular-json-tree/build/angular-json-tree.css'
             ],
             vendor_file: 'vendor.css'
+        };
+
+        this.COPY = {
+            files: [
+                RAW + '/**/*'
+            ],
+            base: RAW,
+            output: ASSETS
         };
 
         this.typings = './typings/';

@@ -1,16 +1,16 @@
 'use strict';
 
-var gulp = require('gulp'),
-    less = require('gulp-less'),
-    debug = require('gulp-debug'),
-    concat = require('gulp-concat'),
-    inject = require('gulp-inject'),
-    tsc = require('gulp-typescript'),
-    tslint = require('gulp-tslint'),
-    sourcemaps = require('gulp-sourcemaps'),
-    del = require('del'),
-    Config = require('./gulpfile.config'),
-    tsProject = tsc.createProject('tsconfig.json');
+var gulp = require('gulp');
+var less = require('gulp-less');
+var debug = require('gulp-debug');
+var concat = require('gulp-concat');
+var inject = require('gulp-inject');
+var tsc = require('gulp-typescript');
+var tslint = require('gulp-tslint');
+var sourcemaps = require('gulp-sourcemaps');
+var del = require('del');
+var Config = require('./gulpfile.config');
+var tsProject = tsc.createProject('tsconfig.json');
 
 var config = new Config();
 
@@ -80,6 +80,11 @@ gulp.task('css.site', function () {
         .pipe(gulp.dest(config.CSS.output));
 });
 
+gulp.task('copy', function () {
+    return gulp.src(config.COPY.files, {base: config.COPY.base})
+        .pipe(gulp.dest(config.COPY.output));
+});
+
 /**
  * Remove all generated JavaScript files from TypeScript compilation.
  */
@@ -103,5 +108,6 @@ gulp.task('default', [
     'css.vendor',
     'css.site',
     'ts-lint',
-    'compile-ts'
+    'compile-ts',
+    'copy'
 ]);

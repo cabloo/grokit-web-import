@@ -1,6 +1,7 @@
 interface Tree {
     root: {};
     current: {};
+    view: {};
 }
 
 module gwi {
@@ -26,6 +27,7 @@ module gwi {
 
         set current(val: Object) {
             this.tree.current = val;
+            this.tree.view = this.wrap(this.tree.current);
         }
 
         get current(): Object {
@@ -37,7 +39,8 @@ module gwi {
             this.$scope = $scope;
             this.$scope.tree = {
                 root: {},
-                current: {}
+                current: {},
+                view: null
             };
             this.$scope.parentChosen = false;
 
@@ -58,8 +61,8 @@ module gwi {
                 }
             };
 
-            this.$scope.$watch('tree.current', () => {
-                console.log('hmm');
+            this.$scope.$watch('tree.view', (val) => {
+                console.log(val);
             });
 
             this.parentNodeChoices = this.nodeChoices();
@@ -91,6 +94,31 @@ module gwi {
             this.$scope.parentChosen = true;
 
             this.current = _.get(this.root, name);
+        }
+
+        chooseNode($event) {
+            var scope = angular.element($event.target).scope();
+            console.log(scope);
+        }
+
+        wrap(obj: Object) {
+            var stringOf = (value: any) => {
+                return "" + value;
+            };
+
+            var map = (value: any, key: string) => {
+                return {
+                    data: {
+                        title: key + stringOf(value)
+                    },
+                    attr: {
+
+                    },
+                    children: _.isArray(value) || _.isObject(value) ? _.map(value, map) : []
+                };
+            };
+
+            return map(obj, "");
         }
     }
 
