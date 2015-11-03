@@ -1,16 +1,45 @@
+'use strict';
+
 interface Tree {
     root: {};
     current: {};
     view: {};
 }
 
-module gwi {
-    'use strict';
+interface NodeScope extends ng.IScope {
+    key: string,
+    value: any
+}
 
+function stringOf(value: any) {
+    return "" + value;
+};
+
+function map(value: any, key: string) {
+    var hasChildren = _.isArray(value) || _.isObject(value);
+    return {
+        data: {
+            title: key + ": " + stringOf(value)
+        },
+        attr: {
+
+        },
+        children: hasChildren ? _.map(value, map) : []
+    };
+};
+
+module gwi {
     class MainController {
-        $scope: { tree: Tree, $watch: Function, parentChosen: Boolean };
+        $scope: {
+            tree: Tree,
+            $watch: Function,
+            columns: Array<String>,
+            parentChosen: Boolean,
+            chooseNode: Function,
+            chooseParentNode: Function,
+            parentNodeChoices: Array<String>
+        };
         parentNodeChoices = [];
-        columns = [];
 
         get tree(): Tree {
             return this.$scope.tree;
@@ -34,6 +63,10 @@ module gwi {
             return this.tree.current;
         }
 
+        get columns(): Array<String> {
+            return this.$scope.columns;
+        }
+
         static $inject = ['$scope'];
         constructor($scope) {
             this.$scope = $scope;
@@ -42,6 +75,7 @@ module gwi {
                 current: {},
                 view: null
             };
+            this.$scope.columns = [];
             this.$scope.parentChosen = false;
 
             this.current = this.root = {
@@ -61,11 +95,9 @@ module gwi {
                 }
             };
 
-            this.$scope.$watch('tree.view', (val) => {
-                console.log(val);
-            });
-
-            this.parentNodeChoices = this.nodeChoices();
+            this.$scope.parentNodeChoices = this.nodeChoices();
+            this.$scope.chooseParentNode = this.chooseParentNode.bind(this);
+            this.$scope.chooseNode = this.chooseParentNode.bind(this);
         }
 
         /**
@@ -97,27 +129,17 @@ module gwi {
         }
 
         chooseNode($event) {
-            var scope = angular.element($event.target).scope();
-            console.log(scope);
+            var scope = <NodeScope>{};
+            _.extend(scope, angular.element($event.target).scope());
+            var isLeaf = !_.isArray(scope.value) && !_.isObject(scope.value);
+            if (!this.$scope.parentChosen || !scope.$id || !isLeaf) {
+                return;
+            }
+
+            this.columns.push(scope.key);
         }
 
         wrap(obj: Object) {
-            var stringOf = (value: any) => {
-                return "" + value;
-            };
-
-            var map = (value: any, key: string) => {
-                return {
-                    data: {
-                        title: key + stringOf(value)
-                    },
-                    attr: {
-
-                    },
-                    children: _.isArray(value) || _.isObject(value) ? _.map(value, map) : []
-                };
-            };
-
             return map(obj, "");
         }
     }
