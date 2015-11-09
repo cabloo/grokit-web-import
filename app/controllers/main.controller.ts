@@ -11,6 +11,30 @@ interface NodeScope extends ng.IScope {
     value: any
 }
 
+interface PageScope extends ng.IScope {
+    tree: Tree,
+    rows: Array<Object>,
+    columns: Array<String>,
+    parentChosen: Boolean,
+    chooseNode: Function,
+    chooseParentNode: Function,
+    removeColumn: Function,
+    parentNodeChoices: Array<string>,
+    getRowItem: Function
+}
+
+interface NodeClickEvent extends ng.IAngularEvent {
+    target: HTMLScriptElement
+}
+
+interface PossibleNodeScope extends ng.IScope {
+    key?: string
+}
+
+function isLeaf(value: any) {
+    return !_.isArray(value) && !_.isObject(value)
+}
+
 function stringOf(value: any) {
     return "" + value;
 };
@@ -28,18 +52,13 @@ function map(value: any, key: string) {
     };
 };
 
+function getRowItem(row, col) {
+    return _.get(row, col);
+}
+
 module gwi {
     class MainController {
-        $scope: {
-            tree: Tree,
-            $watch: Function,
-            columns: Array<String>,
-            parentChosen: Boolean,
-            chooseNode: Function,
-            chooseParentNode: Function,
-            parentNodeChoices: Array<String>
-        };
-        parentNodeChoices = [];
+        $scope: PageScope;
 
         get tree(): Tree {
             return this.$scope.tree;
@@ -57,6 +76,7 @@ module gwi {
         set current(val: Object) {
             this.tree.current = val;
             this.tree.view = this.wrap(this.tree.current);
+            this.$scope.rows = _.isArray(val) ? <Array<Object>>val : [];
         }
 
         get current(): Object {
@@ -68,28 +88,37 @@ module gwi {
         }
 
         static $inject = ['$scope'];
-        constructor($scope) {
+        constructor($scope: PageScope) {
             this.$scope = $scope;
             this.$scope.tree = {
                 root: {},
                 current: {},
                 view: null
             };
+            this.$scope.rows = [];
             this.$scope.columns = [];
             this.$scope.parentChosen = false;
 
             this.current = this.root = {
-                test: 'hi',
+                test: 'useless data',
                 nested: {
                     items: [
                         {
-                            test: 'work'
+                            test: 'From Item 1',
+                            a: 'a'
                         },
                         {
-                            test: 'well'
+                            test: 'From Item 2',
+                            deeply: {
+                                nested: {
+                                    items: 'work'
+                                }
+                            }
                         },
                         {
-                            test: 'too'
+                            test: 'From Item 3',
+                            a: 'b',
+                            c: 'd',
                         }
                     ]
                 }
@@ -97,7 +126,9 @@ module gwi {
 
             this.$scope.parentNodeChoices = this.nodeChoices();
             this.$scope.chooseParentNode = this.chooseParentNode.bind(this);
-            this.$scope.chooseNode = this.chooseParentNode.bind(this);
+            this.$scope.chooseNode = this.chooseNode.bind(this);
+            this.$scope.removeColumn = this.removeColumn.bind(this);
+            this.$scope.getRowItem = getRowItem;
         }
 
         /**
@@ -122,21 +153,42 @@ module gwi {
         }
 
         chooseParentNode(i: number) {
-            var name = this.parentNodeChoices[i];
+            var name = this.$scope.parentNodeChoices[i];
             this.$scope.parentChosen = true;
 
             this.current = _.get(this.root, name);
         }
 
-        chooseNode($event) {
-            var scope = <NodeScope>{};
-            _.extend(scope, angular.element($event.target).scope());
-            var isLeaf = !_.isArray(scope.value) && !_.isObject(scope.value);
-            if (!this.$scope.parentChosen || !scope.$id || !isLeaf) {
+        chooseNode($event: NodeClickEvent) {
+            var nodeScope = <NodeScope>angular.element($event.target).scope();
+            if (!this.$scope.parentChosen || !nodeScope.$id || !isLeaf(nodeScope.value))
                 return;
+
+            var keys = [],
+                currScope: PossibleNodeScope = nodeScope;
+
+            // Figure out key by traversing up the Tree.
+            while (currScope != this.$scope) {
+                if (currScope.hasOwnProperty('key')) {
+                    keys.unshift(currScope.key);
+                }
+                currScope = currScope.$parent;
             }
 
-            this.columns.push(scope.key);
+            // Remove the first two keys (array and index of the array)
+            keys.shift();
+            keys.shift();
+
+            var key = keys.join('.');
+            if (_.indexOf(this.columns, key) != -1)
+                return;
+
+
+            this.columns.push(key);
+        }
+
+        removeColumn(key: number) {
+            this.$scope.columns.splice(key, 1);
         }
 
         wrap(obj: Object) {

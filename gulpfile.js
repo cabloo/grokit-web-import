@@ -80,11 +80,6 @@ gulp.task('css.site', function () {
         .pipe(gulp.dest(config.CSS.output));
 });
 
-gulp.task('copy', function () {
-    return gulp.src(config.COPY.files, {base: config.COPY.base})
-        .pipe(gulp.dest(config.COPY.output));
-});
-
 /**
  * Remove all generated JavaScript files from TypeScript compilation.
  */
@@ -108,6 +103,5 @@ gulp.task('default', [
     'css.vendor',
     'css.site',
     'ts-lint',
-    'compile-ts',
-    'copy'
+    'compile-ts'
 ]);

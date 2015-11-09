@@ -1,11 +1,11 @@
 'use strict';
+
 var GulpConfig = (function () {
     function gulpConfig() {
-        var APP = './app',
-            LESS = './less',
-            PUBLIC = './public',
-            ASSETS = PUBLIC + '/assets',
-            RAW = './assets';
+        var APP = './app';
+        var LESS = './less';
+        var PUBLIC = './public';
+        var ASSETS = PUBLIC + '/assets';
 
         this.source = PUBLIC + '/';
         this.sourceApp = APP + '/';
@@ -44,14 +44,6 @@ var GulpConfig = (function () {
                 comp + 'angular-json-tree/build/angular-json-tree.css'
             ],
             vendor_file: 'vendor.css'
-        };
-
-        this.COPY = {
-            files: [
-                RAW + '/**/*'
-            ],
-            base: RAW,
-            output: ASSETS
         };
 
         this.typings = './typings/';
