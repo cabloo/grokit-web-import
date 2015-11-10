@@ -19,6 +19,7 @@ interface PageScope extends ng.IScope {
     chooseNode: Function,
     chooseParentNode: Function,
     removeColumn: Function,
+    editColumn: Function,
     parentNodeChoices: Array<string>,
     getRowItem: Function
 }
@@ -59,6 +60,10 @@ function getRowItem(row, col) {
 module gwi {
     class MainController {
         $scope: PageScope;
+        $modal: {
+            open: Function
+        };
+        Import: gwi.ImportService;
 
         get tree(): Tree {
             return this.$scope.tree;
@@ -87,9 +92,16 @@ module gwi {
             return this.$scope.columns;
         }
 
-        static $inject = ['$scope'];
-        constructor($scope: PageScope) {
+        static $inject = ['$scope', '$uibModal', 'gwi.ImportService'];
+        constructor($scope: PageScope, $modal, Import) {
+            this.$modal = $modal;
             this.$scope = $scope;
+            this.Import = Import;
+
+            this.setupScope();
+        }
+
+        setupScope() {
             this.$scope.tree = {
                 root: {},
                 current: {},
@@ -99,35 +111,13 @@ module gwi {
             this.$scope.columns = [];
             this.$scope.parentChosen = false;
 
-            this.current = this.root = {
-                test: 'useless data',
-                nested: {
-                    items: [
-                        {
-                            test: 'From Item 1',
-                            a: 'a'
-                        },
-                        {
-                            test: 'From Item 2',
-                            deeply: {
-                                nested: {
-                                    items: 'work'
-                                }
-                            }
-                        },
-                        {
-                            test: 'From Item 3',
-                            a: 'b',
-                            c: 'd',
-                        }
-                    ]
-                }
-            };
+            this.current = this.root = this.Import.object;
 
             this.$scope.parentNodeChoices = this.nodeChoices();
             this.$scope.chooseParentNode = this.chooseParentNode.bind(this);
             this.$scope.chooseNode = this.chooseNode.bind(this);
             this.$scope.removeColumn = this.removeColumn.bind(this);
+            this.$scope.editColumn = this.editColumn.bind(this);
             this.$scope.getRowItem = getRowItem;
         }
 
@@ -189,6 +179,12 @@ module gwi {
 
         removeColumn(key: number) {
             this.$scope.columns.splice(key, 1);
+        }
+
+        editColumn(key: number) {
+            this.$modal.open({
+                templateUrl: 'views/edit-column.html'
+            });
         }
 
         wrap(obj: Object) {

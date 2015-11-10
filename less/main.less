@@ -22,11 +22,6 @@ body {
     border-radius: 0 0 4px 4px;
 }
 
-.parent-node-choices {
-    margin: 20px;
-    text-align: left;
-}
-
 a[ng-click] {
     cursor: pointer;
 }
@@ -40,13 +35,32 @@ td.disabled {
     font-style: italic;
 }
 
-json-tree .key {
-    cursor: pointer;
+.main-page {
+    json-tree .key {
+        cursor: pointer;
+    }
+
+    .parent-node-choices {
+        margin: 20px;
+        text-align: left;
+    }
+
+    .th-btns {
+        float: right;
+        margin-top: 3px;
+        line-height: 15px;
+
+        a {
+            padding: 0 4px 0 0;
+        }
+    }
 }
 
-.col-delete {
-    .text-red;
-    float: right;
-    line-height: 15px;
-    margin-top: 3px;
+.import-page {
+    .paste-form {
+        height: 300px;
+        max-width: 100%;
+        min-width: 100%;
+        margin-bottom: none;
+    }
 }

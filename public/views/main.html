@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container main-page">
     <div class="row">
         <div class="col-md-6">
             <div class="panel panel-default">
@@ -38,9 +38,14 @@
                         <tr>
                             <th ng-repeat="(key, col) in columns">
                                 {{ col }}
-                                <a ng-click="removeColumn(key)" class="col-delete">
-                                    <span class="glyphicon glyphicon-remove"></span>
-                                </a>
+                                <span class="th-btns">
+                                    <a ng-click="editColumn(key)">
+                                        <span class="glyphicon glyphicon-pencil"></span>
+                                    </a>
+                                    <a ng-click="removeColumn(key)" class="text-red">
+                                        <span class="glyphicon glyphicon-remove"></span>
+                                    </a>
+                                </span>
                             </th>
                         </tr>
                     </thead>

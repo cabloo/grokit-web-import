@@ -23,6 +23,8 @@ var GulpConfig = (function () {
                 comp + 'bootstrap/js/bootstrap.min.js',
                 comp + 'angular/angular.min.js',
                 comp + 'angular-json-tree/build/angular-json-tree.min.js',
+                comp + 'angular-bootstrap/ui-bootstrap.min.js',
+                comp + 'angular-bootstrap/ui-bootstrap-tpls.min.js',
                 comp + 'angular-route/angular-route.min.js',
                 comp + 'lodash/lodash.min.js',
                 mod + 'tree/service.js',
