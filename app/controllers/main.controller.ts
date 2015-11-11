@@ -1,4 +1,4 @@
-'use strict';
+/// <reference path="../services/import.service.ts"/>
 
 interface Tree {
     root: {};
@@ -20,6 +20,7 @@ interface PageScope extends ng.IScope {
     chooseParentNode: Function,
     removeColumn: Function,
     editColumn: Function,
+    exportCode: Function,
     parentNodeChoices: Array<string>,
     getRowItem: Function
 }
@@ -30,6 +31,10 @@ interface NodeClickEvent extends ng.IAngularEvent {
 
 interface PossibleNodeScope extends ng.IScope {
     key?: string
+}
+
+interface ExportModalScope extends ng.IScope {
+    code: string
 }
 
 function isLeaf(value: any) {
@@ -63,7 +68,7 @@ module gwi {
         $modal: {
             open: Function
         };
-        Import: gwi.ImportService;
+        Import: ImportService;
 
         get tree(): Tree {
             return this.$scope.tree;
@@ -93,7 +98,7 @@ module gwi {
         }
 
         static $inject = ['$scope', '$uibModal', 'gwi.ImportService'];
-        constructor($scope: PageScope, $modal, Import) {
+        constructor($scope: PageScope, $modal, Import: ImportService) {
             this.$modal = $modal;
             this.$scope = $scope;
             this.Import = Import;
@@ -118,6 +123,7 @@ module gwi {
             this.$scope.chooseNode = this.chooseNode.bind(this);
             this.$scope.removeColumn = this.removeColumn.bind(this);
             this.$scope.editColumn = this.editColumn.bind(this);
+            this.$scope.exportCode = this.exportCode.bind(this);
             this.$scope.getRowItem = getRowItem;
         }
 
@@ -173,7 +179,6 @@ module gwi {
             if (_.indexOf(this.columns, key) != -1)
                 return;
 
-
             this.columns.push(key);
         }
 
@@ -184,6 +189,15 @@ module gwi {
         editColumn(key: number) {
             this.$modal.open({
                 templateUrl: 'views/edit-column.html'
+            });
+        }
+
+        exportCode() {
+            var scope = <ExportModalScope>this.$scope.$new();
+            scope.code = "Sample R Export code";
+            this.$modal.open({
+                templateUrl: 'views/modal-export-code.html',
+                scope: scope
             });
         }
 

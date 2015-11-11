@@ -15,7 +15,7 @@ var GulpConfig = (function () {
         this.allTypeScript = APP + '/**/*.ts';
 
         var comp = this.sourceApp + "components/";
-        var mod = this.sourceApp + "modules/";
+        var mod = './node_modules/';
 
         this.JS = {
             vendor: [
@@ -26,11 +26,10 @@ var GulpConfig = (function () {
                 comp + 'angular-bootstrap/ui-bootstrap.min.js',
                 comp + 'angular-bootstrap/ui-bootstrap-tpls.min.js',
                 comp + 'angular-route/angular-route.min.js',
-                comp + 'lodash/lodash.min.js',
-                mod + 'tree/service.js',
-                mod + 'tree/factory.js',
-                mod + 'tree/treeModule.js',
-                mod + 'contextMenu/contextMenuModule.js'
+                comp + 'angular-toastr/dist/angular-toastr.min.js',
+                comp + 'angular-toastr/dist/angular-toastr.tpls.min.js',
+                mod + 'js-yaml/dist/js-yaml.min.js',
+                comp + 'lodash/lodash.min.js'
             ]
         };
 
@@ -43,6 +42,7 @@ var GulpConfig = (function () {
             vendor: [
                 comp + 'bootstrap/dist/css/bootstrap.min.css',
                 comp + 'bootstrap/dist/css/bootstrap-theme.min.css',
+                comp + 'angular-toastr/dist/angular-toastr.min.css',
                 comp + 'angular-json-tree/build/angular-json-tree.css'
             ],
             vendor_file: 'vendor.css'

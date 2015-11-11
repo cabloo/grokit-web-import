@@ -1,6 +1,6 @@
 module gwi {
     export var app = angular.module('gwi', [
-        'ngRoute', 'angular-json-tree', 'treeModule', 'ui.bootstrap'
+        'ngRoute', 'angular-json-tree', 'ui.bootstrap', 'toastr'
     ]).config(['$routeProvider', ($routeProvider) => {
         $routeProvider.when('/',
         {

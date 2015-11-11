@@ -39,10 +39,10 @@
                             <th ng-repeat="(key, col) in columns">
                                 {{ col }}
                                 <span class="th-btns">
-                                    <a ng-click="editColumn(key)">
+                                    <a ng-click="editColumn(key)" class="no-underline">
                                         <span class="glyphicon glyphicon-pencil"></span>
                                     </a>
-                                    <a ng-click="removeColumn(key)" class="text-red">
+                                    <a ng-click="removeColumn(key)" class="no-underline text-red">
                                         <span class="glyphicon glyphicon-remove"></span>
                                     </a>
                                 </span>
@@ -58,7 +58,7 @@
                     </tbody>
                 </table>
 
-                <button class="btn btn-success btn-full">Send to Grokit</button>
+                <button class="btn btn-success btn-full" ng-click="exportCode()">Send to Grokit</button>
             </div>
         </div>
     </div>

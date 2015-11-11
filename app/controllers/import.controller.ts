@@ -1,3 +1,5 @@
+/// <reference path="../services/import.service.ts"/>
+
 'use strict';
 
 interface PageScope extends ng.IScope {
@@ -8,13 +10,11 @@ interface PageScope extends ng.IScope {
 module gwi {
     class ImportController {
         $scope: PageScope;
-        $location: any;
         Import: gwi.ImportService;
 
-        static $inject = ['$scope', '$location', 'gwi.ImportService'];
-        constructor($scope: PageScope, $location, Import: gwi.ImportService) {
+        static $inject = ['$scope', 'gwi.ImportService'];
+        constructor($scope: PageScope, Import: gwi.ImportService) {
             this.$scope = $scope;
-            this.$location = $location;
             this.Import = Import;
 
             this.setupScope();
@@ -26,10 +26,8 @@ module gwi {
         }
 
         submitPasted() {
-            this.Import.object = JSON.parse(this.$scope.pasted);
-            this.$location.path('/');
+            this.Import.view(this.$scope.pasted);
         }
-
     }
 
     app.controller('gwi.ImportController', ImportController);
