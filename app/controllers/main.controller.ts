@@ -22,7 +22,8 @@ interface PageScope extends ng.IScope {
     editColumn: Function,
     exportCode: Function,
     parentNodeChoices: Array<string>,
-    getRowItem: Function
+    getRowItem: Function,
+    reset: Function
 }
 
 interface NodeClickEvent extends ng.IAngularEvent {
@@ -125,6 +126,7 @@ module gwi {
             this.$scope.editColumn = this.editColumn.bind(this);
             this.$scope.exportCode = this.exportCode.bind(this);
             this.$scope.getRowItem = getRowItem;
+            this.$scope.reset = this.reset.bind(this);
         }
 
         /**
@@ -183,7 +185,7 @@ module gwi {
         }
 
         removeColumn(key: number) {
-            this.$scope.columns.splice(key, 1);
+            this.columns.splice(key, 1);
         }
 
         editColumn(key: number) {
@@ -199,6 +201,11 @@ module gwi {
                 templateUrl: 'views/modal-export-code.html',
                 scope: scope
             });
+        }
+
+        reset() {
+            this.current = this.root;
+            this.columns = [];
         }
 
         wrap(obj: Object) {

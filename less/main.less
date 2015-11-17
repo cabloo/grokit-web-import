@@ -85,3 +85,34 @@ td.disabled {
         padding: 10px 15px;
     }
 }
+
+.scrollable {
+
+}
+
+.tree-view {
+    height: 500px;
+}
+
+.table-view {
+    max-height: 500px;
+}
+
+table.scrollable {
+    width: 100%; /* Optional */
+    /* border-collapse: collapse; */
+    tbody, thead {
+        display: block;
+    }
+
+    tbody {
+        height: 500px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+}
+
+.fill-panel {
+    margin: 0 -1px;
+    width: 100%;
+}

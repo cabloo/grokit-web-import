@@ -29,7 +29,8 @@ var GulpConfig = (function () {
                 comp + 'angular-toastr/dist/angular-toastr.min.js',
                 comp + 'angular-toastr/dist/angular-toastr.tpls.min.js',
                 mod + 'js-yaml/dist/js-yaml.min.js',
-                comp + 'lodash/lodash.min.js'
+                comp + 'lodash/lodash.min.js',
+                comp + 'xml2js/lib/xml2js.js'
             ]
         };
 
