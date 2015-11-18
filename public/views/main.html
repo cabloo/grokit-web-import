@@ -56,7 +56,7 @@
                             </tr>
                         </thead>
                     </table>
-                    <div class="scrollable table-view" scroll-limit="thisPage in rows">
+                    <div class="scrollable table-view" id="table-scroller" scroll-limit="thisPage in rows">
                         <div><table class="table table-striped table-bordered" ng-show="page.columns.length">
                             <tbody id="data-container">
                                 <tr ng-repeat="row in thisPage">
@@ -68,6 +68,11 @@
                         </table></div>
                     </div>
                 </div>
+
+                <div class="overview-info text-center" style="border-top: 1px solid #ddd" ng-show="parentChosen">
+                    Found {{ rows.length }} items.
+                </div>
+
                 <button class="btn btn-success btn-full" ng-click="exportCode()">Send to Grokit</button>
             </div>
         </div>

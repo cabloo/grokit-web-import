@@ -131,9 +131,10 @@ module gwi {
             this.$scope.reset = this.reset.bind(this);
 
             // Scope listeners
-            var processResize = _.debounce(this.onColumnChange.bind(this), 50);
-            this.$scope.$watchCollection('columns', processResize);
-            $(window).resize(processResize);
+            var processColumnSize = _.debounce(this.onColumnChange.bind(this), 50);
+            this.$scope.$watchCollection('columns', processColumnSize);
+            $(window).resize(processColumnSize);
+            $('#table-scroller').scroll(processColumnSize);
         }
 
         onColumnChange() {
@@ -163,14 +164,23 @@ module gwi {
                 }
             };
 
-            return _.flatten(_.filter(_.map(tree || this.root, map)));
+            tree = tree || this.root;
+            if (_.isArray(tree)) {
+                this.setParentTree(this.root);
+                return [];
+            }
+
+            return _.flatten(_.filter(_.map(tree, map)));
         }
 
         chooseParentNode(i: number) {
             var name = this.$scope.parentNodeChoices[i];
-            this.$scope.parentChosen = true;
+            this.setParentTree(_.get(this.root, name));
+        }
 
-            this.current = _.get(this.root, name);
+        setParentTree(tree) {
+            this.$scope.parentChosen = true;
+            this.current = tree;
         }
 
         chooseNode($event: NodeClickEvent) {
@@ -221,8 +231,9 @@ module gwi {
 
         reset() {
             this.current = this.root;
-            this.$scope.columns = [];
             this.$scope.parentChosen = false;
+            this.$scope.columns = [];
+            this.$scope.parentNodeChoices = this.nodeChoices();
         }
 
         wrap(obj: Object) {
