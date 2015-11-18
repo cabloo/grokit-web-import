@@ -36,33 +36,37 @@
                     </div>
                 </div>
 
-                <table class="table table-striped table-bordered" ng-show="page.columns.length">
-                    <thead>
-                        <tr>
-                            <th ng-repeat="(key, col) in columns">
-                                {{ col }}
-                                <span class="th-btns">
-                                    <a ng-click="editColumn(key)" class="no-underline">
-                                        <span class="glyphicon glyphicon-pencil"></span>
-                                    </a>
-                                    <a ng-click="removeColumn(key)" class="no-underline text-red">
-                                        <span class="glyphicon glyphicon-remove"></span>
-                                    </a>
-                                </span>
-                            </th>
-                        </tr>
-                    </thead>
-                </table>
-                <div class="scrollable fill-panel">
-                    <table class="table table-striped table-bordered" ng-show="page.columns.length">
-                        <tbody>
-                            <tr ng-repeat="row in rows">
-                                <td ng-repeat="col in columns" ng-class="{disabled: !getRowItem(row, col)}">
-                                    {{ getRowItem(row, col) || 'null' }}
-                                </td>
+                <div class="table-fixed-header fill-panel overview">
+                    <table class="table table-striped table-bordered table-fixed-header-top" ng-show="page.columns.length">
+                        <thead>
+                            <tr id="header-container">
+                                <th ng-repeat="(key, col) in columns" uib-tooltip="{{col}}" tooltip-placement="bottom">
+                                    <span class="th-text">
+                                        {{ col }}
+                                    </span>
+                                    <span class="th-btns">
+                                        <a ng-click="editColumn(key)" class="no-underline">
+                                            <span class="glyphicon glyphicon-pencil"></span>
+                                        </a>
+                                        <a ng-click="removeColumn(key)" class="no-underline text-red">
+                                            <span class="glyphicon glyphicon-remove"></span>
+                                        </a>
+                                    </span>
+                                </th>
                             </tr>
-                        </tbody>
+                        </thead>
                     </table>
+                    <div class="scrollable table-view" scroll-limit="thisPage in rows">
+                        <div><table class="table table-striped table-bordered" ng-show="page.columns.length">
+                            <tbody id="data-container">
+                                <tr ng-repeat="row in thisPage">
+                                    <td ng-repeat="col in columns" ng-class="{disabled: !getRowItem(row, col)}">
+                                        {{ getRowItem(row, col) || 'null' }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table></div>
+                    </div>
                 </div>
                 <button class="btn btn-success btn-full" ng-click="exportCode()">Send to Grokit</button>
             </div>

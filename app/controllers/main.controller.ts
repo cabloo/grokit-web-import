@@ -38,6 +38,10 @@ interface ExportModalScope extends ng.IScope {
     code: string
 }
 
+interface Modal {
+    open: Function
+}
+
 function isLeaf(value: any) {
     return !_.isArray(value) && !_.isObject(value)
 }
@@ -66,9 +70,7 @@ function getRowItem(row, col) {
 module gwi {
     class MainController {
         $scope: PageScope;
-        $modal: {
-            open: Function
-        };
+        $modal: Modal;
         Import: ImportService;
 
         get tree(): Tree {
@@ -99,7 +101,7 @@ module gwi {
         }
 
         static $inject = ['$scope', '$uibModal', 'gwi.ImportService'];
-        constructor($scope: PageScope, $modal, Import: ImportService) {
+        constructor($scope: PageScope, $modal: Modal, Import: ImportService) {
             this.$modal = $modal;
             this.$scope = $scope;
             this.Import = Import;
@@ -127,6 +129,20 @@ module gwi {
             this.$scope.exportCode = this.exportCode.bind(this);
             this.$scope.getRowItem = getRowItem;
             this.$scope.reset = this.reset.bind(this);
+
+            // Scope listeners
+            var processResize = _.debounce(this.onColumnChange.bind(this), 50);
+            this.$scope.$watchCollection('columns', processResize);
+            $(window).resize(processResize);
+        }
+
+        onColumnChange() {
+            var cols = $('#data-container tr:eq(0) td');
+            $('#header-container').children().each(function(index) {
+                $(this).width(function() {
+                    return cols.eq(index).width() + (cols.length - 1 == index ? 0 : 1);
+                });
+            });
         }
 
         /**
@@ -181,11 +197,11 @@ module gwi {
             if (_.indexOf(this.columns, key) != -1)
                 return;
 
-            this.columns.push(key);
+            this.$scope.columns.push(key);
         }
 
         removeColumn(key: number) {
-            this.columns.splice(key, 1);
+            this.$scope.columns.splice(key, 1);
         }
 
         editColumn(key: number) {
@@ -205,7 +221,8 @@ module gwi {
 
         reset() {
             this.current = this.root;
-            this.columns = [];
+            this.$scope.columns = [];
+            this.$scope.parentChosen = false;
         }
 
         wrap(obj: Object) {

@@ -13,11 +13,14 @@ module gwi {
 
         object: Object;
         toastr: Toastr;
+        $scope: ng.IScope;
         $location: ng.ILocationService;
+        reader: FileReader;
 
-        static $inject = ['$location', 'toastr'];
-        constructor($location: ng.ILocationService, toastr: Toastr) {
+        static $inject = ['$location', '$rootScope', 'toastr'];
+        constructor($location: ng.ILocationService, $rootScope: ng.IScope, toastr: Toastr) {
             this.$location = $location;
+            this.$scope = $rootScope;
             this.toastr = toastr;
             this.object = {
                 "test": "useless data",
@@ -44,6 +47,15 @@ module gwi {
                     ]
                 }
             };
+
+            this.setupReader();
+        }
+
+        setupReader() {
+            this.reader = new FileReader();
+            this.reader.onload = (onLoadEvent: FileReaderLoadEvent) => {
+                this.view(onLoadEvent.target.result);
+            };
         }
 
         /**
@@ -57,7 +69,9 @@ module gwi {
             if (!obj) return;
 
             this.object = obj;
-            this.$location.path('/');
+            this.$scope.$apply(() => {
+                this.$location.path('/');
+            });
         }
 
         /**
@@ -137,6 +151,10 @@ module gwi {
             } catch (e) {
                 this.toastr.error("Parse Error: " + e);
             }
+        }
+
+        fromFile(file: Blob) {
+            this.reader.readAsText(file);
         }
     }
 

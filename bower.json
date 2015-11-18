@@ -17,8 +17,7 @@
     "test",
     "tests"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "angular": "~1.4.7",
     "angular-json-tree": "*",

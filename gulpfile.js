@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var gulp = require('gulp');
 var less = require('gulp-less');
 var debug = require('gulp-debug');
@@ -40,19 +41,21 @@ gulp.task('ts-lint', function () {
  * Compile TypeScript and include references to library and app .d.ts files.
  */
 gulp.task('compile-ts', function () {
-    var sourceTsFiles = [config.allTypeScript,                //path to typescript files
-                         config.libraryTypeScriptDefinitions]; //reference to library .d.ts files
+    var sourceTsFiles = _.flatten([
+        config.allTypeScript,                //path to typescript files
+        config.libraryTypeScriptDefinitions  //reference to library .d.ts files
+    ]);
 
 
     var tsResult = gulp.src(sourceTsFiles)
                        .pipe(sourcemaps.init())
                        .pipe(tsc(tsProject))
 
-        tsResult.dts.pipe(gulp.dest(config.tsOutputPath));
-        return tsResult.js
-            .pipe(concat('app.js'))
-            .pipe(sourcemaps.write('.'))
-            .pipe(gulp.dest(config.tsOutputPath));
+    tsResult.dts.pipe(gulp.dest(config.tsOutputPath));
+    return tsResult.js
+        .pipe(concat('app.js'))
+        .pipe(sourcemaps.write('.'))
+        .pipe(gulp.dest(config.tsOutputPath));
 });
 
 gulp.task('js.vendor', function () {
@@ -96,6 +99,8 @@ gulp.task('clean-ts', function (cb) {
 
 gulp.task('watch', function() {
     gulp.watch([config.allTypeScript], ['ts-lint', 'compile-ts']);
+    gulp.watch([config.CSS.input], ['css.site']);
+    gulp.watch([config.CSS.vendor], ['css.vendor']);
 });
 
 gulp.task('default', [

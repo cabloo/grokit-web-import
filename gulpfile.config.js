@@ -1,5 +1,3 @@
-'use strict';
-
 var GulpConfig = (function () {
     function gulpConfig() {
         var APP = './app';
@@ -12,7 +10,14 @@ var GulpConfig = (function () {
 
         this.tsOutputPath = ASSETS;
         this.allJavaScript = [ASSETS + '/**/*.js'];
-        this.allTypeScript = APP + '/**/*.ts';
+        this.allTypeScript = [
+            APP + '/app.module.ts',
+            APP + '/app.config.ts',
+            APP + '/*.ts',
+            APP + '/controllers/*.ts',
+            APP + '/services/*.ts',
+            APP + '/directives/*.ts'
+        ];
 
         var comp = this.sourceApp + "components/";
         var mod = './node_modules/';
@@ -29,8 +34,8 @@ var GulpConfig = (function () {
                 comp + 'angular-toastr/dist/angular-toastr.min.js',
                 comp + 'angular-toastr/dist/angular-toastr.tpls.min.js',
                 mod + 'js-yaml/dist/js-yaml.min.js',
-                comp + 'lodash/lodash.min.js',
-                comp + 'xml2js/lib/xml2js.js'
+                comp + 'lodash/lodash.min.js'
+                //comp + 'xml2js/lib/xml2js.js'
             ]
         };
 
