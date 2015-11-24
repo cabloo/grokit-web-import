@@ -9,8 +9,103 @@ body {
   height: 70px;
 }
 /**
+ * Remove outline from clicked items
+ */
+a,
+.btn {
+  outline: none !important;
+}
+/**
  * Button that takes up the width of its container.
  */
 .btn-full {
   width: 100%;
+}
+.panel > .btn-full {
+  line-height: 30px;
+  border-radius: 0 0 4px 4px;
+}
+a[ng-click] {
+  cursor: pointer;
+}
+.no-underline,
+.no-underline:hover {
+  text-decoration: none;
+}
+.text-red {
+  color: #900;
+}
+td.disabled {
+  color: #aaa;
+  font-style: italic;
+}
+/**
+ * Main Page (Browser/Overview/Export)
+ */
+.main-page json-tree .key {
+  cursor: pointer;
+}
+.main-page .parent-node-choices {
+  margin: 20px;
+  text-align: left;
+}
+.main-page .overview th {
+  position: relative;
+  height: 37px;
+}
+.main-page .overview .th-btns {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  line-height: 15px;
+}
+.main-page .overview .th-text {
+  display: inline-block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 30px;
+}
+.main-page .overview .table {
+  margin-bottom: 0;
+}
+.main-page .tree-view {
+  max-height: 500px;
+}
+.main-page .table-view {
+  max-height: 414px;
+}
+/**
+ * Import Page
+ */
+.import-page .paste-form {
+  height: 300px;
+  max-width: 100%;
+  min-width: 100%;
+  margin-bottom: none;
+}
+.fully-clickable .panel-title a {
+  display: block;
+  margin: -10px -15px;
+  padding: 10px 15px;
+}
+.scrollable {
+  overflow: auto;
+}
+.fill-panel {
+  margin: 0 -1px;
+}
+.fill-panel > table {
+  margin-bottom: 0;
+}
+.table-fixed-header .table-fixed-header-top {
+  border-bottom: 0;
+}
+.table-fixed-header .table-fixed-header-top > thead > tr > th {
+  border-bottom-width: 1px;
+}
+.table-fixed-header thead th {
+  display: block;
+  float: left;
+  border-left: 0 !important;
 }
