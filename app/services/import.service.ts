@@ -69,9 +69,11 @@ module gwi {
             if (!obj) return;
 
             this.object = obj;
-            this.$scope.$apply(() => {
-                this.$location.path('/');
-            });
+            setTimeout(() => {
+                this.$scope.$apply(() => {
+                    this.$location.path('/');
+                });
+            }, 0);
         }
 
         /**
