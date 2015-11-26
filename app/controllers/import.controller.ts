@@ -6,15 +6,15 @@ interface PageScope extends ng.IScope {
     encoding: string,
     filename: string,
     submitPasted: Function,
-    submitImport: Function
+    loading: boolean,
 }
 
 interface FileReaderLoadEventTarget extends EventTarget {
-    result: string
+    result: string,
 }
 
 interface FileReaderLoadEvent extends Event {
-    target: FileReaderLoadEventTarget
+    target: FileReaderLoadEventTarget,
 }
 
 module gwi {
@@ -33,18 +33,20 @@ module gwi {
         setupScope() {
             this.$scope.pasted = "";
             this.$scope.submitPasted = this.submitPasted.bind(this);
-            this.$scope.submitImport = this.submitImport.bind(this);
+            this.$scope.file = null;
+            this.$scope.$watch('file', (value) => {
+                //this.$scope.encoding = this.$scope.encoding || 'UTF-8';
+                if (!value) return;
+
+                this.$scope.loading = true;
+                this.Import.fromFile(value, () => {
+                    this.$scope.loading = false;
+                });
+            });
         }
 
         submitPasted() {
             this.Import.view(this.$scope.pasted);
-        }
-
-        submitImport(form) {
-            this.$scope.encoding = this.$scope.encoding || 'UTF-8';
-            if (this.$scope.file)  {
-				this.Import.fromFile(this.$scope.file);
-            }
         }
     }
 

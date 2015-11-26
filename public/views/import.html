@@ -8,9 +8,7 @@
                     </h3>
                 </div>
                 <div class="panel-body">
-                    <textarea ng-model="pasted" class="paste-form form-control">
-
-                    </textarea>
+                    <textarea ng-model="pasted" class="paste-form form-control"></textarea>
                 </div>
                 <div class="panel-footer clearfix">
                     <div class="pull-right">
@@ -27,21 +25,21 @@
             <br />
         </div>
         <div class="col-md-5">
-            <form class="panel panel-default" ng-submit="submitImport(this)">
+            <div class="panel panel-default relative" ng-class="{loading: loading}">
+                <b class="loader"></b>
+
                 <div class="panel-heading">
                     <h3 class="panel-title">
                         Import File
                     </h3>
                 </div>
                 <div class="panel-body">
-                    <input type="file" file-input="file" /><br />
-                </div>
-                <div class="panel-footer clearfix">
-                    <div class="pull-right">
-                        <input type="submit" class="btn btn-success" value="Import" />
+                    <div class="fake-file-input">
+                        <input type="file" file-input="file" />
+                        <a class="btn btn-xl btn-info">Import File</a>
                     </div>
                 </div>
-            </form>
+            </div>
 
             <uib-accordion close-others="true" class="fully-clickable">
                 <uib-accordion-group heading="Example JSON" is-open="true">

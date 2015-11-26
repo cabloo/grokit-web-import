@@ -3,7 +3,6 @@
 interface Tree {
     root: {};
     current: {};
-    view: {};
 }
 
 interface NodeScope extends ng.IScope {
@@ -87,8 +86,7 @@ module gwi {
         }
 
         set current(val: Object) {
-            this.tree.current = val;
-            this.tree.view = this.wrap(this.tree.current);
+            this.tree.current = _.isArray(val) ? val : [val];
             this.$scope.rows = _.isArray(val) ? <Array<Object>>val : [];
         }
 
@@ -113,7 +111,6 @@ module gwi {
             this.$scope.tree = {
                 root: {},
                 current: {},
-                view: null
             };
             this.$scope.rows = [];
             this.$scope.columns = [];
@@ -131,7 +128,7 @@ module gwi {
             this.$scope.reset = this.reset.bind(this);
 
             // Scope listeners
-            var processColumnSize = _.debounce(this.onColumnChange.bind(this), 50);
+            var processColumnSize = _.debounce(this.onColumnChange.bind(this), 30);
             this.$scope.$watchCollection('columns', processColumnSize);
             $(window).resize(processColumnSize);
             $('#table-scroller').scroll(processColumnSize);
@@ -199,8 +196,7 @@ module gwi {
                 currScope = currScope.$parent;
             }
 
-            // Remove the first two keys (array and index of the array)
-            keys.shift();
+            // Remove the irrelevant keys
             keys.shift();
 
             var key = keys.join('.');

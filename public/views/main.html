@@ -7,8 +7,15 @@
                         Browse
                     </h3>
                 </div>
-                <div class="panel-body scrollable tree-view">
-                    <json-tree object="tree.current" ng-click="chooseNode($event)"></json-tree>
+                <div class="panel-body scrollable tree-view" scroll-limit="thisPage in tree.current">
+                    <div>
+                        <div ng-repeat="object in thisPage">
+                            <json-tree
+                                object="object"
+                                ng-click="chooseNode($event)"
+                            ></json-tree>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -27,8 +34,12 @@
                     <div ng-show="!parentChosen">
                         Select the parent node (the one that contains the array of data):
 
-                        <ul class="parent-node-choices" ng-repeat="(key, name) in parentNodeChoices">
-                            <li><a ng-click="chooseParentNode(key)">{{name}}</a></li>
+                        <ul class="parent-node-choices">
+                            <li ng-repeat="(key, name) in parentNodeChoices">
+                                <a ng-click="chooseParentNode(key)">
+                                    {{name}}
+                                </a>
+                            </li>
                         </ul>
                     </div>
                     <div ng-show="parentChosen">

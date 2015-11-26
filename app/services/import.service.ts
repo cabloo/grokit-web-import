@@ -16,6 +16,7 @@ module gwi {
         $scope: ng.IScope;
         $location: ng.ILocationService;
         reader: FileReader;
+        cb: Function;
 
         static $inject = ['$location', '$rootScope', 'toastr'];
         constructor($location: ng.ILocationService, $rootScope: ng.IScope, toastr: Toastr) {
@@ -55,6 +56,7 @@ module gwi {
             this.reader = new FileReader();
             this.reader.onload = (onLoadEvent: FileReaderLoadEvent) => {
                 this.view(onLoadEvent.target.result);
+                this.cb(onLoadEvent);
             };
         }
 
@@ -155,8 +157,9 @@ module gwi {
             }
         }
 
-        fromFile(file: Blob) {
+        fromFile(file: Blob, cb?: Function) {
             this.reader.readAsText(file);
+            this.cb = cb;
         }
     }
 

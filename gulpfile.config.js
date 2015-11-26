@@ -1,3 +1,5 @@
+var _ = require('lodash');
+
 var GulpConfig = (function () {
     function gulpConfig() {
         var APP = './app';
@@ -39,18 +41,20 @@ var GulpConfig = (function () {
             ]
         };
 
+        var cssVendor = [
+            comp + 'bootstrap/dist/css/bootstrap.min.css',
+            comp + 'bootstrap/dist/css/bootstrap-theme.min.css',
+            comp + 'angular-toastr/dist/angular-toastr.min.css',
+            comp + 'angular-json-tree/build/angular-json-tree.css'
+        ];
         this.CSS = {
             output: ASSETS,
             input: [
                 LESS + '/main.less'
             ],
+            watch: [LESS + '/*.less'].concat(cssVendor),
             main_file: 'style.css',
-            vendor: [
-                comp + 'bootstrap/dist/css/bootstrap.min.css',
-                comp + 'bootstrap/dist/css/bootstrap-theme.min.css',
-                comp + 'angular-toastr/dist/angular-toastr.min.css',
-                comp + 'angular-json-tree/build/angular-json-tree.css'
-            ],
+            vendor: cssVendor,
             vendor_file: 'vendor.css'
         };
 
