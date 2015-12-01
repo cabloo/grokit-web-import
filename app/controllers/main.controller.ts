@@ -1,8 +1,25 @@
 /// <reference path="../services/import.service.ts"/>
 
-interface Tree {
-    root: {};
-    current: {};
+class Tree {
+    _root: Object;
+    _curr: Array<Object>;
+
+    get current(): Object {
+        return this._curr;
+    }
+
+    set root(tree: Object) {
+        this._root = tree;
+        this._curr = _.isArray(this._root) ? this._root : [];
+    }
+
+    get root(): Object {
+        return this._root;
+    }
+
+    setCurrentRoot(name: string) {
+        this._curr = name == "" ? this._root : _.get(this._root, name);
+    }
 }
 
 interface NodeScope extends ng.IScope {
@@ -78,16 +95,10 @@ module gwi {
 
         set root(tree: Object) {
             this.tree.root = tree;
-            this.tree.current = tree;
         }
 
         get root(): Object {
             return this.tree.root;
-        }
-
-        set current(val: Object) {
-            this.tree.current = _.isArray(val) ? val : [val];
-            this.$scope.rows = _.isArray(val) ? <Array<Object>>val : [];
         }
 
         get current(): Object {
@@ -108,10 +119,7 @@ module gwi {
         }
 
         setupScope() {
-            this.$scope.tree = {
-                root: {},
-                current: {},
-            };
+            this.$scope.tree = new Tree;
             this.$scope.rows = [];
             this.$scope.columns = [];
             this.$scope.parentChosen = false;
@@ -163,7 +171,7 @@ module gwi {
 
             tree = tree || this.root;
             if (_.isArray(tree)) {
-                this.setParentTree(this.root);
+                this.setCurrentRoot("");
                 return [];
             }
 
@@ -172,12 +180,14 @@ module gwi {
 
         chooseParentNode(i: number) {
             var name = this.$scope.parentNodeChoices[i];
-            this.setParentTree(_.get(this.root, name));
+            this.setCurrentRoot(name);
         }
 
-        setParentTree(tree) {
+        setCurrentRoot(name: string) {
             this.$scope.parentChosen = true;
-            this.current = tree;
+            this.tree.setCurrentRoot(name);
+
+            this.$scope.rows = this.current;
         }
 
         chooseNode($event: NodeClickEvent) {

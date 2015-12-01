@@ -5,6 +5,74 @@ interface Toastr {
     info: Function
 }
 
+function parseXml(xml: string, arrayTags?: Array<string>) {
+    var dom = null;
+    if (window.hasOwnProperty("DOMParser")) {
+        dom = (new DOMParser()).parseFromString(xml, "text/xml");
+        console.log('tes1');
+    }
+    else if (window.hasOwnProperty("ActiveXObject")) {
+        dom = new ActiveXObject('Microsoft.XMLDOM');
+        dom.async = false;
+        if (!dom.loadXML(xml)) {
+            throw dom.parseError.reason + " " + dom.parseError.srcText;
+        }
+        console.log('tes2');
+    }
+    else {
+        throw "cannot parse xml string!";
+    }
+
+    function isArray(o) {
+        return _.isArray(o);
+    }
+
+    function parseNode(xmlNode, result) {
+        if (xmlNode.nodeName == "#text" && xmlNode.nodeValue.trim() == "") {
+            return;
+        }
+
+        var jsonNode = xmlNode.nodeName == "#text" ? xmlNode.nodeValue.trim() : {};
+        var existing = result[xmlNode.nodeName];
+        if (existing) {
+            if (!isArray(existing)) {
+                result[xmlNode.nodeName] = [existing, jsonNode];
+            }
+            else {
+                result[xmlNode.nodeName].push(jsonNode);
+            }
+        }
+        else {
+            if (arrayTags && arrayTags.indexOf(xmlNode.nodeName) != -1) {
+                result[xmlNode.nodeName] = [jsonNode];
+            }
+            else {
+                result[xmlNode.nodeName] = jsonNode;
+            }
+        }
+
+        if (xmlNode.attributes) {
+            var length = xmlNode.attributes.length;
+            for (var i = 0; i < length; i++) {
+                var attribute = xmlNode.attributes[i];
+                jsonNode[attribute.nodeName] = attribute.nodeValue;
+            }
+        }
+
+        var length = xmlNode.childNodes.length;
+        for (var i = 0; i < length; i++) {
+            parseNode(xmlNode.childNodes[i], jsonNode);
+        }
+    }
+
+    var result = {};
+    if (dom.childNodes.length) {
+        parseNode(dom.childNodes[0], result);
+    }
+
+    return result;
+}
+
 module gwi {
     export class ImportService {
         static JSON = 1;
@@ -50,6 +118,8 @@ module gwi {
             };
 
             this.setupReader();
+
+            this.cb = () => { };
         }
 
         setupReader() {
@@ -101,8 +171,7 @@ module gwi {
          * @throws XML Exception
          */
         getXml(str: string) {
-            // TODO
-            return JSON.parse(str);
+            return parseXml(str);
         }
 
         /**

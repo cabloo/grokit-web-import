@@ -67,10 +67,10 @@
                             </tr>
                         </thead>
                     </table>
-                    <div class="scrollable table-view" id="table-scroller" scroll-limit="thisPage in rows">
+                    <div class="scrollable table-view" id="table-scroller" scroll-limit="dataRows in rows">
                         <div><table class="table table-striped table-bordered" ng-show="page.columns.length">
                             <tbody id="data-container">
-                                <tr ng-repeat="row in thisPage">
+                                <tr ng-repeat="row in dataRows">
                                     <td ng-repeat="col in columns" ng-class="{disabled: !getRowItem(row, col)}">
                                         {{ getRowItem(row, col) || 'null' }}
                                     </td>
