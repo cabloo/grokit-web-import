@@ -283,16 +283,13 @@ var Tree = (function () {
         },
         set: function (tree) {
             this._root = tree;
-            this._curr = tree;
+            this._curr = _.isArray(this._root) ? this._root : [];
         },
         enumerable: true,
         configurable: true
     });
     Tree.prototype.isArray = function () {
         return _.isArray(this._curr);
-    };
-    Tree.prototype.currentAsArray = function () {
-        return this.isArray() ? this._curr : [this._curr];
     };
     Tree.prototype.setCurrentRoot = function (name) {
         this._curr = name == "" ? this._root : _.get(this._root, name);
