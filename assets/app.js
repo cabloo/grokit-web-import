@@ -26,6 +26,66 @@ var gwi;
         }]);
 })(gwi || (gwi = {}));
 
+function parseXml(xml, arrayTags) {
+    var dom = null;
+    if (window.hasOwnProperty("DOMParser")) {
+        dom = (new DOMParser()).parseFromString(xml, "text/xml");
+        console.log('tes1');
+    }
+    else if (window.hasOwnProperty("ActiveXObject")) {
+        dom = new ActiveXObject('Microsoft.XMLDOM');
+        dom.async = false;
+        if (!dom.loadXML(xml)) {
+            throw dom.parseError.reason + " " + dom.parseError.srcText;
+        }
+        console.log('tes2');
+    }
+    else {
+        throw "cannot parse xml string!";
+    }
+    function isArray(o) {
+        return _.isArray(o);
+    }
+    function parseNode(xmlNode, result) {
+        if (xmlNode.nodeName == "#text" && xmlNode.nodeValue.trim() == "") {
+            return;
+        }
+        var jsonNode = xmlNode.nodeName == "#text" ? xmlNode.nodeValue.trim() : {};
+        var existing = result[xmlNode.nodeName];
+        if (existing) {
+            if (!isArray(existing)) {
+                result[xmlNode.nodeName] = [existing, jsonNode];
+            }
+            else {
+                result[xmlNode.nodeName].push(jsonNode);
+            }
+        }
+        else {
+            if (arrayTags && arrayTags.indexOf(xmlNode.nodeName) != -1) {
+                result[xmlNode.nodeName] = [jsonNode];
+            }
+            else {
+                result[xmlNode.nodeName] = jsonNode;
+            }
+        }
+        if (xmlNode.attributes) {
+            var length = xmlNode.attributes.length;
+            for (var i = 0; i < length; i++) {
+                var attribute = xmlNode.attributes[i];
+                jsonNode[attribute.nodeName] = attribute.nodeValue;
+            }
+        }
+        var length = xmlNode.childNodes.length;
+        for (var i = 0; i < length; i++) {
+            parseNode(xmlNode.childNodes[i], jsonNode);
+        }
+    }
+    var result = {};
+    if (dom.childNodes.length) {
+        parseNode(dom.childNodes[0], result);
+    }
+    return result;
+}
 var gwi;
 (function (gwi) {
     var ImportService = (function () {
@@ -59,12 +119,14 @@ var gwi;
                 }
             };
             this.setupReader();
+            this.cb = function () { };
         }
         ImportService.prototype.setupReader = function () {
             var _this = this;
             this.reader = new FileReader();
             this.reader.onload = function (onLoadEvent) {
                 _this.view(onLoadEvent.target.result);
+                _this.cb(onLoadEvent);
             };
         };
         /**
@@ -107,8 +169,7 @@ var gwi;
          * @throws XML Exception
          */
         ImportService.prototype.getXml = function (str) {
-            // TODO
-            return JSON.parse(str);
+            return parseXml(str);
         };
         /**
          * Convert a YAML string to a JS object.
@@ -158,8 +219,9 @@ var gwi;
                 this.toastr.error("Parse Error: " + e);
             }
         };
-        ImportService.prototype.fromFile = function (file) {
+        ImportService.prototype.fromFile = function (file, cb) {
             this.reader.readAsText(file);
+            this.cb = cb;
         };
         ImportService.JSON = 1;
         ImportService.YAML = 2;
@@ -181,18 +243,22 @@ var gwi;
             this.setupScope();
         }
         ImportController.prototype.setupScope = function () {
+            var _this = this;
             this.$scope.pasted = "";
             this.$scope.submitPasted = this.submitPasted.bind(this);
-            this.$scope.submitImport = this.submitImport.bind(this);
+            this.$scope.file = null;
+            this.$scope.$watch('file', function (value) {
+                //this.$scope.encoding = this.$scope.encoding || 'UTF-8';
+                if (!value)
+                    return;
+                _this.$scope.loading = true;
+                _this.Import.fromFile(value, function () {
+                    _this.$scope.loading = false;
+                });
+            });
         };
         ImportController.prototype.submitPasted = function () {
             this.Import.view(this.$scope.pasted);
-        };
-        ImportController.prototype.submitImport = function (form) {
-            this.$scope.encoding = this.$scope.encoding || 'UTF-8';
-            if (this.$scope.file) {
-                this.Import.fromFile(this.$scope.file);
-            }
         };
         ImportController.$inject = ['$scope', 'gwi.ImportService'];
         return ImportController;
@@ -201,6 +267,38 @@ var gwi;
 })(gwi || (gwi = {}));
 
 /// <reference path="../services/import.service.ts"/>
+var Tree = (function () {
+    function Tree() {
+    }
+    Object.defineProperty(Tree.prototype, "current", {
+        get: function () {
+            return this._curr;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Tree.prototype, "root", {
+        get: function () {
+            return this._root;
+        },
+        set: function (tree) {
+            this._root = tree;
+            this._curr = tree;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Tree.prototype.isArray = function () {
+        return _.isArray(this._curr);
+    };
+    Tree.prototype.currentAsArray = function () {
+        return this.isArray() ? this._curr : [this._curr];
+    };
+    Tree.prototype.setCurrentRoot = function (name) {
+        this._curr = name == "" ? this._root : _.get(this._root, name);
+    };
+    return Tree;
+})();
 function isLeaf(value) {
     return !_.isArray(value) && !_.isObject(value);
 }
@@ -244,7 +342,6 @@ var gwi;
             },
             set: function (tree) {
                 this.tree.root = tree;
-                this.tree.current = tree;
             },
             enumerable: true,
             configurable: true
@@ -252,11 +349,6 @@ var gwi;
         Object.defineProperty(MainController.prototype, "current", {
             get: function () {
                 return this.tree.current;
-            },
-            set: function (val) {
-                this.tree.current = val;
-                this.tree.view = this.wrap(this.tree.current);
-                this.$scope.rows = _.isArray(val) ? val : [];
             },
             enumerable: true,
             configurable: true
@@ -269,11 +361,7 @@ var gwi;
             configurable: true
         });
         MainController.prototype.setupScope = function () {
-            this.$scope.tree = {
-                root: {},
-                current: {},
-                view: null
-            };
+            this.$scope.tree = new Tree;
             this.$scope.rows = [];
             this.$scope.columns = [];
             this.$scope.parentChosen = false;
@@ -287,7 +375,7 @@ var gwi;
             this.$scope.getRowItem = getRowItem;
             this.$scope.reset = this.reset.bind(this);
             // Scope listeners
-            var processColumnSize = _.debounce(this.onColumnChange.bind(this), 50);
+            var processColumnSize = _.debounce(this.onColumnChange.bind(this), 30);
             this.$scope.$watchCollection('columns', processColumnSize);
             $(window).resize(processColumnSize);
             $('#table-scroller').scroll(processColumnSize);
@@ -319,18 +407,19 @@ var gwi;
             };
             tree = tree || this.root;
             if (_.isArray(tree)) {
-                this.setParentTree(this.root);
+                this.setCurrentRoot("");
                 return [];
             }
             return _.flatten(_.filter(_.map(tree, map)));
         };
         MainController.prototype.chooseParentNode = function (i) {
             var name = this.$scope.parentNodeChoices[i];
-            this.setParentTree(_.get(this.root, name));
+            this.setCurrentRoot(name);
         };
-        MainController.prototype.setParentTree = function (tree) {
+        MainController.prototype.setCurrentRoot = function (name) {
             this.$scope.parentChosen = true;
-            this.current = tree;
+            this.tree.setCurrentRoot(name);
+            this.$scope.rows = this.tree.isArray() ? this.current : [];
         };
         MainController.prototype.chooseNode = function ($event) {
             var nodeScope = angular.element($event.target).scope();
@@ -344,8 +433,7 @@ var gwi;
                 }
                 currScope = currScope.$parent;
             }
-            // Remove the first two keys (array and index of the array)
-            keys.shift();
+            // Remove the irrelevant keys
             keys.shift();
             var key = keys.join('.');
             if (_.indexOf(this.columns, key) != -1)
@@ -405,39 +493,65 @@ var gwi;
 
 var gwi;
 (function (gwi) {
+    var Scroller = (function () {
+        function Scroller(element, $scope, unlimitedVarName, limitedVarName) {
+            this.i = 0;
+            this.$scope = $scope;
+            this.element = element;
+            this.limitedVarName = limitedVarName;
+            this.unlimitedVarName = unlimitedVarName;
+        }
+        Scroller.prototype.data = function () {
+            return this.$scope.$eval(this.unlimitedVarName);
+        };
+        Scroller.prototype.recalculate = function () {
+            var _this = this;
+            var data = this.data();
+            if (!_.isArray(data))
+                return;
+            var currPos = this.element[0].scrollTop;
+            var countRows = data.length;
+            var countRowsInViewPort = 30; // TODO
+            var containerHeight = 0; // TODO
+            var heightPerRow = 37; // TODO
+            var height = countRows * heightPerRow;
+            var start = Math.round(countRows * currPos / (height - containerHeight));
+            var end = start + countRowsInViewPort;
+            this.element.children().eq(0).css({
+                'padding-top': currPos + 'px',
+                'box-sizing': 'border-box',
+                'height': height + 'px',
+            });
+            setTimeout(function () {
+                _this.$scope.$apply(function () {
+                    _this.$scope[_this.limitedVarName] = data.slice(start, end);
+                });
+                _this.i--;
+            }, this.i++);
+        };
+        Scroller.prototype.binding = function () {
+            return this.recalculate.bind(this);
+        };
+        return Scroller;
+    })();
+    function link($scope, element, attrs) {
+        var _a = attrs.scrollLimit.split(' in '), limitedVarName = _a[0], unlimitedVarName = _a[1];
+        if (!limitedVarName
+            || !unlimitedVarName
+            || limitedVarName == unlimitedVarName) {
+            console.error("Invalid syntax for scroll-limit: expected '<newVarName> in <oldVarName>'");
+        }
+        var scroller = new Scroller(element, $scope, unlimitedVarName, limitedVarName);
+        var recalculate = scroller.binding();
+        $scope.$watch(unlimitedVarName, recalculate);
+        element.on('scroll', recalculate);
+    }
     gwi.app.directive('scrollLimit', [function () {
-            return function ($scope, element, attrs) {
-                var _a = attrs.scrollLimit.split(' '), limitedVarName = _a[0], operation = _a[1], unlimitedVarName = _a[2];
-                if (operation != "in"
-                    || !limitedVarName
-                    || !unlimitedVarName
-                    || limitedVarName == unlimitedVarName) {
-                    console.error("Invalid syntax for scroll-limit: expected '<newVarName> in <oldVarName>'");
-                }
-                var i = 0;
-                var recalculate = _.throttle(function () {
-                    var currPos = element[0].scrollTop;
-                    var countRows = $scope[unlimitedVarName].length;
-                    var countRowsInViewPort = 30; // TODO
-                    var containerHeight = 0; // TODO
-                    var heightPerRow = 37; // TODO
-                    var height = countRows * heightPerRow;
-                    var start = Math.round(countRows * currPos / (height - containerHeight));
-                    var end = start + countRowsInViewPort;
-                    element.children().eq(0).css({
-                        'padding-top': currPos + 'px',
-                        'height': height + 'px',
-                        'box-sizing': 'border-box'
-                    });
-                    setTimeout(function () {
-                        $scope.$apply(function () {
-                            $scope[limitedVarName] = $scope[unlimitedVarName].slice(start, end);
-                        });
-                        i--;
-                    }, i++);
-                }, 10);
-                $scope.$watch(unlimitedVarName, recalculate);
-                element.bind('scroll', recalculate);
+            return {
+                restrict: 'A',
+                priority: 1001,
+                link: link,
+                scope: true,
             };
         }]);
 })(gwi || (gwi = {}));

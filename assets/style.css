@@ -1,13 +1,3 @@
-body {
-  background: #f4f5f8;
-  font-family: 'Open Sans', 'Helvetica Neue', sans-serif;
-}
-/**
- * Top padding to offset the fixed navbar.
- */
-#body-top-padding {
-  height: 70px;
-}
 /**
  * Remove outline from clicked items
  */
@@ -38,6 +28,31 @@ a[ng-click] {
 td.disabled {
   color: #aaa;
   font-style: italic;
+}
+.relative {
+  position: relative;
+}
+.scrollable {
+  overflow: auto;
+}
+/**
+ * Display over the parent's borders.
+ */
+.fill-panel {
+  margin: 0 -1px;
+}
+.fill-panel > table {
+  margin-bottom: 0;
+}
+body {
+  background: #f4f5f8;
+  font-family: 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+/**
+ * Top padding to offset the fixed navbar.
+ */
+#body-top-padding {
+  height: 70px;
 }
 /**
  * Main Page (Browser/Overview/Export)
@@ -71,6 +86,7 @@ td.disabled {
 }
 .main-page .tree-view {
   max-height: 500px;
+  height: 500px;
 }
 .main-page .table-view {
   max-height: 414px;
@@ -89,15 +105,9 @@ td.disabled {
   margin: -10px -15px;
   padding: 10px 15px;
 }
-.scrollable {
-  overflow: auto;
-}
-.fill-panel {
-  margin: 0 -1px;
-}
-.fill-panel > table {
-  margin-bottom: 0;
-}
+/**
+ * Fixed header at the top of tables with scrollable body.
+ */
 .table-fixed-header .table-fixed-header-top {
   border-bottom: 0;
 }
@@ -108,4 +118,51 @@ td.disabled {
   display: block;
   float: left;
   border-left: 0 !important;
+}
+/**
+ * Nice looking file input button
+ */
+.fake-file-input {
+  position: relative;
+  height: 50px;
+  line-height: 47px;
+  width: 100%;
+}
+.fake-file-input input[type=file] {
+  opacity: 0;
+  z-index: 1;
+}
+.fake-file-input input[type=file],
+.fake-file-input .btn {
+  position: absolute;
+  display: block;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.fake-file-input .btn {
+  padding: 0;
+  line-height: inherit;
+  font-size: 1.3em;
+  z-index: 0;
+}
+/**
+ * Loader
+ */
+.loading .loader {
+  opacity: 1;
+  z-index: 1;
+}
+.loader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 0;
+  transition: opacity .5s ease;
+  background: rgba(0, 0, 0, 0.2) url('img/loader.gif') center center no-repeat;
+  z-index: -1;
 }
