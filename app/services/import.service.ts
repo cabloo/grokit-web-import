@@ -1,79 +1,87 @@
-interface Toastr {
-    warning: Function,
-    success: Function,
-    error: Function,
-    info: Function
-}
-
-function parseXml(xml: string, arrayTags?: Array<string>) {
-    var dom = null;
-    if (window.hasOwnProperty("DOMParser")) {
-        dom = (new DOMParser()).parseFromString(xml, "text/xml");
-        console.log('tes1');
+module gwi {
+    interface Toastr {
+        warning: Function,
+        success: Function,
+        error: Function,
+        info: Function
     }
-    else if (window.hasOwnProperty("ActiveXObject")) {
-        dom = new ActiveXObject('Microsoft.XMLDOM');
-        dom.async = false;
-        if (!dom.loadXML(xml)) {
-            throw dom.parseError.reason + " " + dom.parseError.srcText;
+
+    interface FileReaderLoadEventTarget extends EventTarget {
+        result: string
+    }
+
+    interface FileReaderLoadEvent extends Event {
+        target: FileReaderLoadEventTarget
+    }
+
+    function parseXml(xml: string, arrayTags?: Array<string>) {
+        var dom = null;
+        if (window.hasOwnProperty("DOMParser")) {
+            dom = (new DOMParser()).parseFromString(xml, "text/xml");
+            console.log('tes1');
         }
-        console.log('tes2');
-    }
-    else {
-        throw "cannot parse xml string!";
-    }
-
-    function isArray(o) {
-        return _.isArray(o);
-    }
-
-    function parseNode(xmlNode, result) {
-        if (xmlNode.nodeName == "#text" && xmlNode.nodeValue.trim() == "") {
-            return;
-        }
-
-        var jsonNode = xmlNode.nodeName == "#text" ? xmlNode.nodeValue.trim() : {};
-        var existing = result[xmlNode.nodeName];
-        if (existing) {
-            if (!isArray(existing)) {
-                result[xmlNode.nodeName] = [existing, jsonNode];
+        else if (window.hasOwnProperty("ActiveXObject")) {
+            dom = new ActiveXObject('Microsoft.XMLDOM');
+            dom.async = false;
+            if (!dom.loadXML(xml)) {
+                throw dom.parseError.reason + " " + dom.parseError.srcText;
             }
-            else {
-                result[xmlNode.nodeName].push(jsonNode);
-            }
+            console.log('tes2');
         }
         else {
-            if (arrayTags && arrayTags.indexOf(xmlNode.nodeName) != -1) {
-                result[xmlNode.nodeName] = [jsonNode];
+            throw "cannot parse xml string!";
+        }
+
+        function isArray(o) {
+            return _.isArray(o);
+        }
+
+        function parseNode(xmlNode, result) {
+            if (xmlNode.nodeName == "#text" && xmlNode.nodeValue.trim() == "") {
+                return;
+            }
+
+            var jsonNode = xmlNode.nodeName == "#text" ? xmlNode.nodeValue.trim() : {};
+            var existing = result[xmlNode.nodeName];
+            if (existing) {
+                if (!isArray(existing)) {
+                    result[xmlNode.nodeName] = [existing, jsonNode];
+                }
+                else {
+                    result[xmlNode.nodeName].push(jsonNode);
+                }
             }
             else {
-                result[xmlNode.nodeName] = jsonNode;
+                if (arrayTags && arrayTags.indexOf(xmlNode.nodeName) != -1) {
+                    result[xmlNode.nodeName] = [jsonNode];
+                }
+                else {
+                    result[xmlNode.nodeName] = jsonNode;
+                }
             }
-        }
 
-        if (xmlNode.attributes) {
-            var length = xmlNode.attributes.length;
+            if (xmlNode.attributes) {
+                var length = xmlNode.attributes.length;
+                for (var i = 0; i < length; i++) {
+                    var attribute = xmlNode.attributes[i];
+                    jsonNode[attribute.nodeName] = attribute.nodeValue;
+                }
+            }
+
+            var length = xmlNode.childNodes.length;
             for (var i = 0; i < length; i++) {
-                var attribute = xmlNode.attributes[i];
-                jsonNode[attribute.nodeName] = attribute.nodeValue;
+                parseNode(xmlNode.childNodes[i], jsonNode);
             }
         }
 
-        var length = xmlNode.childNodes.length;
-        for (var i = 0; i < length; i++) {
-            parseNode(xmlNode.childNodes[i], jsonNode);
+        var result = {};
+        if (dom.childNodes.length) {
+            parseNode(dom.childNodes[0], result);
         }
+
+        return result;
     }
 
-    var result = {};
-    if (dom.childNodes.length) {
-        parseNode(dom.childNodes[0], result);
-    }
-
-    return result;
-}
-
-module gwi {
     export class ImportService {
         static JSON = 1;
         static YAML = 2;

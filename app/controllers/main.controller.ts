@@ -1,130 +1,75 @@
-/// <reference path="../services/import.service.ts"/>
-
-class Tree {
-    _root: Object;
-    _curr: Array<Object>;
-
-    get current(): Object {
-        return this._curr;
-    }
-
-    set root(tree: Object) {
-        this._root = tree;
-        this._curr = _.isArray(this._root) ? this._root : [];
-    }
-
-    get root(): Object {
-        return this._root;
-    }
-
-    setCurrentRoot(name: string) {
-        this._curr = name == "" ? this._root : _.get(this._root, name);
-    }
-}
-
-interface NodeScope extends ng.IScope {
-    key: string,
-    value: any
-}
-
-interface PageScope extends ng.IScope {
-    tree: Tree,
-    rows: Array<Object>,
-    columns: Array<String>,
-    parentChosen: Boolean,
-    chooseNode: Function,
-    chooseParentNode: Function,
-    removeColumn: Function,
-    editColumn: Function,
-    exportCode: Function,
-    parentNodeChoices: Array<string>,
-    getRowItem: Function,
-    reset: Function
-}
-
-interface NodeClickEvent extends ng.IAngularEvent {
-    target: HTMLScriptElement
-}
-
-interface PossibleNodeScope extends ng.IScope {
-    key?: string
-}
-
-interface ExportModalScope extends ng.IScope {
-    code: string
-}
-
-interface Modal {
-    open: Function
-}
-
-function isLeaf(value: any) {
-    return !_.isArray(value) && !_.isObject(value)
-}
-
-function stringOf(value: any) {
-    return "" + value;
-};
-
-function map(value: any, key: string) {
-    var hasChildren = _.isArray(value) || _.isObject(value);
-    return {
-        data: {
-            title: key + ": " + stringOf(value)
-        },
-        attr: {
-
-        },
-        children: hasChildren ? _.map(value, map) : []
-    };
-};
-
-function getRowItem(row, col) {
-    return _.get(row, col);
-}
+/// <reference path="../services/overview.service.ts"/>
 
 module gwi {
-    class MainController {
+    interface Tree {
+        root: Object,
+        current: Array<Object>,
+    }
+
+    interface NodeScope extends ng.IScope {
+        key: string,
+        value: any
+    }
+
+    interface PageScope extends ng.IScope {
+        tree: Tree,
+        rows: Array<Object>,
+        columns: Array<string>,
+        parentChosen: Boolean,
+        chooseNode: Function,
+        chooseParentNode: Function,
+        removeColumn: Function,
+        editColumn: Function,
+        exportCode: Function,
+        parentNodeChoices: Array<string>,
+        getRowItem: Function,
+        reset: Function
+    }
+
+    interface NodeClickEvent extends ng.IAngularEvent {
+        target: HTMLScriptElement
+    }
+
+    interface PossibleNodeScope extends ng.IScope {
+        key?: string
+    }
+
+    function isLeaf(value: any) {
+        return !_.isArray(value) && !_.isObject(value);
+    }
+
+    function stringOf(value: any) {
+        return "" + value;
+    };
+
+    function getRowItem(row, col) {
+        return _.get(row, col);
+    }
+
+    export class MainController {
         $scope: PageScope;
-        $modal: Modal;
-        Import: ImportService;
-
-        get tree(): Tree {
-            return this.$scope.tree;
-        }
-
-        set root(tree: Object) {
-            this.tree.root = tree;
-        }
-
-        get root(): Object {
-            return this.tree.root;
-        }
-
-        get current(): Object {
-            return this.tree.current;
-        }
+        Overview: gwi.OverviewService;
 
         get columns(): Array<String> {
             return this.$scope.columns;
         }
 
-        static $inject = ['$scope', '$uibModal', 'gwi.ImportService'];
-        constructor($scope: PageScope, $modal: Modal, Import: ImportService) {
-            this.$modal = $modal;
+        static $inject = ['$scope', 'gwi.OverviewService'];
+        constructor($scope: PageScope, Overview: gwi.OverviewService) {
             this.$scope = $scope;
-            this.Import = Import;
+            this.Overview = Overview;
 
             this.setupScope();
         }
 
         setupScope() {
-            this.$scope.tree = new Tree;
+            this.$scope.tree = {
+                root: this.Overview.root,
+                current: this.Overview.current,
+            };
             this.$scope.rows = [];
             this.$scope.columns = [];
             this.$scope.parentChosen = false;
-
-            this.current = this.root = this.Import.object;
 
             this.$scope.parentNodeChoices = this.nodeChoices();
             this.$scope.chooseParentNode = this.chooseParentNode.bind(this);
@@ -169,7 +114,7 @@ module gwi {
                 }
             };
 
-            tree = tree || this.root;
+            tree = tree || this.Overview.root;
             if (_.isArray(tree)) {
                 this.setCurrentRoot("");
                 return [];
@@ -184,10 +129,10 @@ module gwi {
         }
 
         setCurrentRoot(name: string) {
-            this.$scope.parentChosen = true;
-            this.tree.setCurrentRoot(name);
+            this.$scope.parentChosen = name != "";
+            this.Overview.setCurrentRoot(name);
 
-            this.$scope.rows = this.current;
+            this.$scope.rows = this.Overview.current;
         }
 
         chooseNode($event: NodeClickEvent) {
@@ -221,29 +166,18 @@ module gwi {
         }
 
         editColumn(key: number) {
-            this.$modal.open({
-                templateUrl: 'views/edit-column.html'
-            });
+            this.Overview.editColumn(this.$scope.columns[key]);
         }
 
         exportCode() {
-            var scope = <ExportModalScope>this.$scope.$new();
-            scope.code = "Sample R Export code";
-            this.$modal.open({
-                templateUrl: 'views/modal-export-code.html',
-                scope: scope
-            });
+            this.Overview.exportCode();
         }
 
         reset() {
-            this.current = this.root;
+            this.setCurrentRoot("");
             this.$scope.parentChosen = false;
             this.$scope.columns = [];
             this.$scope.parentNodeChoices = this.nodeChoices();
-        }
-
-        wrap(obj: Object) {
-            return map(obj, "");
         }
     }
 
