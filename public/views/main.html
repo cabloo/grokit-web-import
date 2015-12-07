@@ -53,12 +53,12 @@
                 </div>
 
                 <div class="table-fixed-header fill-panel overview">
-                    <table class="table table-striped table-bordered table-fixed-header-top" ng-show="page.columns.length">
+                    <table class="table table-striped table-bordered table-fixed-header-top" ng-show="columns.length">
                         <thead>
                             <tr id="header-container">
-                                <th ng-repeat="(key, col) in columns" uib-tooltip="{{col}}" tooltip-placement="bottom">
+                                <th ng-repeat="(key, col) in columns" uib-tooltip="{{col.name}}" tooltip-placement="bottom">
                                     <span class="th-text">
-                                        {{ col }}
+                                        {{ col.name }}
                                     </span>
                                     <span class="th-btns">
                                         <a ng-click="editColumn(key)" class="no-underline">
@@ -74,11 +74,11 @@
                     </table>
                     <div class="scrollable table-view" id="table-scroller"
                         scroll-limit="dataRows in rows" row-height="37">
-                        <div><table class="table table-striped table-bordered" ng-show="page.columns.length">
+                        <div><table class="table table-striped table-bordered" ng-show="columns.length">
                             <tbody id="data-container">
                                 <tr ng-repeat="row in dataRows">
-                                    <td ng-repeat="col in columns" ng-class="{disabled: !getRowItem(row, col)}">
-                                        {{ getRowItem(row, col) || 'null' }}
+                                    <td ng-repeat="col in columns" ng-class="{disabled: !getRowItem(row, col.name)}">
+                                        {{ getRowItem(row, col.name) || 'null' }}
                                     </td>
                                 </tr>
                             </tbody>

@@ -1,6 +1,7 @@
 'use strict';
 
 var _ = require('lodash');
+var merge = require('merge-stream');
 var gulp = require('gulp');
 var less = require('gulp-less');
 var debug = require('gulp-debug');
@@ -11,7 +12,6 @@ var tslint = require('gulp-tslint');
 var sourcemaps = require('gulp-sourcemaps');
 var del = require('del');
 var Config = require('./gulpfile.config');
-var tsProject = tsc.createProject('tsconfig.json');
 
 var config = new Config();
 
@@ -46,16 +46,23 @@ gulp.task('compile-ts', function () {
         config.libraryTypeScriptDefinitions  //reference to library .d.ts files
     ]);
 
+    var makeFile = function (sources, dest) {
+        return gulp.src(_.isArray(sources) ? sources : [sources])
+            .pipe(sourcemaps.init())
+            .pipe(tsc(tsc.createProject('tsconfig.json')))
+            .js
+            .pipe(concat(dest))
+            .pipe(sourcemaps.write('.'))
+            .pipe(gulp.dest(config.tsOutputPath))
+            ;
+    };
 
-    var tsResult = gulp.src(sourceTsFiles)
-                       .pipe(sourcemaps.init())
-                       .pipe(tsc(tsProject))
+    var streams = [];
 
-    tsResult.dts.pipe(gulp.dest(config.tsOutputPath));
-    return tsResult.js
-        .pipe(concat('app.js'))
-        .pipe(sourcemaps.write('.'))
-        .pipe(gulp.dest(config.tsOutputPath));
+    var appStream = makeFile(sourceTsFiles, 'app.js');
+    streams.push(appStream);
+
+    return merge.apply(merge, streams);
 });
 
 gulp.task('js.vendor', function () {

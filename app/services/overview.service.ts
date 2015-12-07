@@ -1,5 +1,6 @@
 /// <reference path="../services/import.service.ts"/>
 /// <reference path="../contracts/data.type.ts"/>
+/// <reference path="../contracts/data.column.ts"/>
 
 module gwi {
     interface Modal {
@@ -34,7 +35,10 @@ module gwi {
     }
 
     export class OverviewService {
+        static EmptyColumnTypeName = "Loading...";
+
         _tree: Tree;
+        $q: ng.IQService;
         $scope: ng.IScope;
         $modal: Modal;
         Import: gwi.ImportService;
@@ -42,7 +46,8 @@ module gwi {
         types: {
             [xpath: string]: Data.Type;
         };
-        editing: string;
+        editing: Data.Column;
+        columns: Array<Data.Column>;
 
         get root(): Object {
             return this._tree.root;
@@ -56,14 +61,16 @@ module gwi {
             return this._tree;
         }
 
-        static $inject = ['$rootScope', '$uibModal', 'gwi.ImportService', 'gwi.DataTypeService'];
-        constructor($scope: ng.IScope, $modal: Modal, Import: gwi.ImportService, DataType: gwi.DataTypeService) {
+        static $inject = ['$rootScope', '$uibModal', '$q', 'gwi.ImportService', 'gwi.DataTypeService'];
+        constructor($scope: ng.IScope, $modal: Modal, $q: ng.IQService, Import: gwi.ImportService, DataType: gwi.DataTypeService) {
+            this.$q = $q;
             this.$scope = $scope;
             this.$modal = $modal;
             this.Import = Import;
             this.DataType = DataType;
-            this.editing = "";
+            this.editing = null;
             this.types = {};
+            this.columns = [];
             this.importLatest();
         }
 
@@ -75,8 +82,8 @@ module gwi {
             this.tree.setCurrentRoot(name);
         }
 
-        editColumn(val: string) {
-            this.editing = val;
+        editColumn(key: number) {
+            this.editing = this.columns[key];
             this.$modal.open({
                 controller: 'gwi.ViewColumnModalController',
                 templateUrl: 'views/edit-column.html',
@@ -90,27 +97,72 @@ module gwi {
             });
         }
 
-        colBeingEdited(): string {
-            return this.editing;
+        resetColumns() {
+            this.columns.splice(0, this.columns.length);
+        }
+
+        removeColumn(key: number) {
+            this.columns.splice(key, 1);
+        }
+
+        findColumn(path: string) {
+            return _.find(this.columns, function(column: Data.Column) {
+                return column.name == path;
+            });
+        }
+
+        addColumn(path: string) {
+            if (this.findColumn(path))
+                return;
+
+            this.columns.push({
+                name: path,
+                type: new Data.Type(OverviewService.EmptyColumnTypeName, "Loading"),
+            });
+        }
+
+        setColumnType(column: Data.Column, type: Data.Type) {
+            _.extend(column.type, type);
         }
 
         allowedTypes(): Array<Data.Type> {
             return this.DataType.allowedTypes();
         }
 
-        typeBeingEdited(cb?: Function): Data.Type {
-            var col = this.colBeingEdited();
+        getColsWithTypes(): ng.IPromise<Array<Data.Column>> {
+            var neededCols = _(this.columns).map((column: Data.Column) => {
+                return column.type.name == OverviewService.EmptyColumnTypeName ? column.name : null;
+            }).compact().value();
 
-            if (this.types.hasOwnProperty(col)) {
-                _.defer(cb, this.types[col]);
-                return this.types[col];
+            return this.DataType.getTypes(this.current, neededCols)
+                .then((types: Array<Data.Type>) => {
+                    _.each(types, (type: Data.Type, key: number) => {
+                        var column = this.findColumn(neededCols[key]);
+                        this.setColumnType(column, type);
+                    });
+                    _.defer(this.$scope.$apply.bind(this.$scope));
+
+                    return this.columns;
+                });
+        }
+
+        typeBeingEdited(cb?: Function): Data.Type {
+            var column = this.editing;
+
+            if (column.type.name != OverviewService.EmptyColumnTypeName) {
+                _.defer(cb);
+                return column.type;
             }
 
-            var type = this.types[col] = new Data.Type("Loading...", "Loading");
             setTimeout(() => {
-                cb(_.extend(type, this.DataType.getTypes(this.current, [col])[0]));
+                var type = this.DataType.getTypes(this.current, [column.name])
+                    .then((types: Array<Data.Type>) => {
+                        this.setColumnType(column, types[0]);
+                        cb();
+                    });
             }, 50);
-            return type;
+
+            return column.type;
         }
     }
 

@@ -1,4 +1,5 @@
 /// <reference path="../services/overview.service.ts"/>
+/// <reference path="../contracts/data.column.ts"/>
 
 module gwi {
     interface Tree {
@@ -14,7 +15,7 @@ module gwi {
     interface PageScope extends ng.IScope {
         tree: Tree,
         rows: Array<Object>,
-        columns: Array<string>,
+        columns: Array<Data.Column>,
         parentChosen: Boolean,
         chooseNode: Function,
         chooseParentNode: Function,
@@ -50,10 +51,6 @@ module gwi {
         $scope: PageScope;
         Overview: gwi.OverviewService;
 
-        get columns(): Array<String> {
-            return this.$scope.columns;
-        }
-
         static $inject = ['$scope', 'gwi.OverviewService'];
         constructor($scope: PageScope, Overview: gwi.OverviewService) {
             this.$scope = $scope;
@@ -66,7 +63,7 @@ module gwi {
             this.Overview.importLatest();
             this.$scope.tree = this.Overview.tree;
             this.$scope.rows = [];
-            this.$scope.columns = [];
+            this.$scope.columns = this.Overview.columns;
             this.$scope.parentChosen = false;
 
             this.$scope.parentNodeChoices = this.nodeChoices();
@@ -152,19 +149,17 @@ module gwi {
             // Remove the irrelevant keys
             keys.shift();
 
-            var key = keys.join('.');
-            if (_.indexOf(this.columns, key) != -1)
-                return;
-
-            this.$scope.columns.push(key);
+            var path = keys.join('.');
+            if (path)
+                this.Overview.addColumn(path);
         }
 
         removeColumn(key: number) {
-            this.$scope.columns.splice(key, 1);
+            this.Overview.removeColumn(key);
         }
 
         editColumn(key: number) {
-            this.Overview.editColumn(this.$scope.columns[key]);
+            this.Overview.editColumn(key);
         }
 
         exportCode() {
@@ -174,7 +169,7 @@ module gwi {
         reset() {
             this.setCurrentRoot("");
             this.$scope.parentChosen = false;
-            this.$scope.columns = [];
+            this.Overview.resetColumns();
             this.$scope.parentNodeChoices = this.nodeChoices();
         }
     }

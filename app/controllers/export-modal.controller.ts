@@ -5,18 +5,18 @@ module gwi {
     interface Column {
         path: string,
         type: Data.Type,
-        code: string,
     }
 
     interface PageScope extends ng.IScope {
         loading: boolean,
-        cols: Array<Column>,
+        code: string,
     }
 
     class ExportModalController {
         $scope: PageScope;
         Overview: OverviewService;
         DataType: DataTypeService;
+        columns: Array<Column>;
 
         static $inject = ['$scope', 'gwi.OverviewService', 'gwi.DataTypeService'];
         constructor($scope: PageScope, Overview: OverviewService, DataType: DataTypeService) {
@@ -33,11 +33,20 @@ module gwi {
         setupScope() {
             this.$scope.loading = true;
             this.$scope.code = "Loading...";
+            setTimeout(this.loadCode.bind(this), 50);
         }
 
         loadCode() {
-            
-            this.$scope.code = "R Code goes here";
+            this.Overview.getColsWithTypes()
+                .then((columns: Array<Data.Column>) => {
+                    this.$scope.code = "";
+                    _.each(columns, (column: Data.Column) => {
+                        this.$scope.code += column.name + ": " + column.type.name + " (" +
+                            (column.type.nullable ? 'nullable' : 'not nullable')
+                        + ")\n";
+                    });
+                    this.$applyDeferred();
+                });
         }
     }
 
