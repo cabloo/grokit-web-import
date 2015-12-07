@@ -26,6 +26,10 @@ module gwi {
             return this._root;
         }
 
+        constructor(_root: Object) {
+            this._root = _root;
+        }
+
         setCurrentRoot(name: string) {
             this._curr = <Array<Object>>
                 (name == "" ? this._root : _.get(this._root, name));
@@ -33,27 +37,35 @@ module gwi {
     }
 
     export class OverviewService {
-        tree: Tree;
+        _tree: Tree;
         $scope: ng.IScope;
         $modal: Modal;
         Import: gwi.ImportService;
         editing: string;
 
         get root(): Object {
-            return this.tree.root;
+            return this._tree.root;
         }
 
         get current(): Array<Object> {
-            return this.tree.current;
+            return this._tree.current;
         }
 
-        static $inject = ['$scope', '$uibModal', 'gwi.ImportService'];
+        get tree(): Tree {
+            return this._tree;
+        }
+
+        static $inject = ['$rootScope', '$uibModal', 'gwi.ImportService'];
         constructor($scope: ng.IScope, $modal: Modal, Import: gwi.ImportService) {
             this.$scope = $scope;
+            this.$modal = $modal;
             this.Import = Import;
-            this.tree = new Tree;
-            this.tree.root = this.Import.object;
             this.editing = "";
+            this.importLatest();
+        }
+
+        importLatest() {
+            this._tree = new Tree(this.Import.object);
         }
 
         setCurrentRoot(name: string) {

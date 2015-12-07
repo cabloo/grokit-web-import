@@ -12,11 +12,12 @@ module gwi {
             templateUrl: 'views/import.html',
             controllerAs: 'page'
         })
-        .when('/orders/:customerId',
+        /*.when('/orders/:customerId',
         {
             controller: 'gwi.OrdersController',
             templateUrl: 'views/orders.html',
             controllerAs: 'page'
-        });
+        })*/
+        ;
     }]);
 }

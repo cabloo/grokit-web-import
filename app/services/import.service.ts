@@ -1,3 +1,5 @@
+/// <reference path="../contracts/import.target.ts"/>
+
 module gwi {
     interface Toastr {
         warning: Function,
@@ -6,9 +8,7 @@ module gwi {
         info: Function
     }
 
-    interface FileReaderLoadEventTarget extends EventTarget {
-        result: string
-    }
+    interface FileReaderLoadEventTarget extends EventTarget, Import.Target {}
 
     interface FileReaderLoadEvent extends Event {
         target: FileReaderLoadEventTarget
@@ -133,7 +133,7 @@ module gwi {
         setupReader() {
             this.reader = new FileReader();
             this.reader.onload = (onLoadEvent: FileReaderLoadEvent) => {
-                this.view(onLoadEvent.target.result);
+                this.view(onLoadEvent.target);
                 this.cb(onLoadEvent);
             };
         }
@@ -159,51 +159,51 @@ module gwi {
         /**
          * Convert a JSON string to a JS object.
          *
-         * @param  {string} str
+         * @param  {Import.Target} target
          *
          * @return {Object}
          *
          * @throws JSON Exception
          */
-        getJson(str: string) {
-            return JSON.parse(str);
+        getJson(target: Import.Target) {
+            return JSON.parse(target.result);
         }
 
         /**
          * Convert an XML string to a JS object.
          *
-         * @param  {string} str
+         * @param  {Import.Target} target
          *
          * @return {Object}
          *
          * @throws XML Exception
          */
-        getXml(str: string) {
-            return parseXml(str);
+        getXml(target: Import.Target) {
+            return parseXml(target.result);
         }
 
         /**
          * Convert a YAML string to a JS object.
          *
-         * @param  {string} str
+         * @param  {Import.Target} target
          *
          * @return {Object}
          *
          * @throws YAML Exception
          */
-        getYaml(str: string) {
-            return jsyaml.load(str);
+        getYaml(target: Import.Target) {
+            return jsyaml.load(target.result);
         }
 
         /**
          * Intelligently determine the type of the string given.
          *
-         * @param  {string} str
+         * @param  {Import.Target} target
          *
          * @return {int}
          */
-        getType(str: string) {
-            switch (str[0]) {
+        getType(target: Import.Target) {
+            switch (target.result[0]) {
                 case '{':
                 case '[':
                     return ImportService.JSON;
@@ -214,19 +214,19 @@ module gwi {
             }
         }
 
-        view(str: string) {
+        view(target: Import.Target) {
             try {
-                switch (this.getType(str)) {
+                switch (this.getType(target)) {
                     case ImportService.YAML:
-                        this.viewObject(this.getYaml(str));
+                        this.viewObject(this.getYaml(target));
                         break;
 
                     case ImportService.JSON:
-                        this.viewObject(this.getJson(str));
+                        this.viewObject(this.getJson(target));
                         break;
 
                     case ImportService.XML:
-                        this.viewObject(this.getXml(str));
+                        this.viewObject(this.getXml(target));
                         break;
                 }
             } catch (e) {

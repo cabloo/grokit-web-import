@@ -8,7 +8,7 @@ module gwi {
 
     interface NodeScope extends ng.IScope {
         key: string,
-        value: any
+        value: any,
     }
 
     interface PageScope extends ng.IScope {
@@ -63,10 +63,8 @@ module gwi {
         }
 
         setupScope() {
-            this.$scope.tree = {
-                root: this.Overview.root,
-                current: this.Overview.current,
-            };
+            this.Overview.importLatest();
+            this.$scope.tree = this.Overview.tree;
             this.$scope.rows = [];
             this.$scope.columns = [];
             this.$scope.parentChosen = false;

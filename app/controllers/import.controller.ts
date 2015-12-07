@@ -1,4 +1,5 @@
 /// <reference path="../services/import.service.ts"/>
+/// <reference path="../contracts/import.target.ts"/>
 
 module gwi {
     interface PageScope extends ng.IScope {
@@ -24,7 +25,7 @@ module gwi {
         reader: FileReader;
 
         static $inject = ['$scope', 'gwi.ImportService'];
-        constructor($scope: PageScope, Import: gwi.ImportService) {
+        constructor($scope: PageScope, Import: ImportService) {
             this.$scope = $scope;
             this.Import = Import;
             this.setupScope();
@@ -46,7 +47,9 @@ module gwi {
         }
 
         submitPasted() {
-            this.Import.view(this.$scope.pasted);
+            this.Import.view(<Import.Target>{
+                result: this.$scope.pasted
+            });
         }
     }
 
