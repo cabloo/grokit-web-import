@@ -1,123 +1,82 @@
-class Path {
-    static TYPE_STRING = 0;
-    static TYPE_INTEGER = 1;
-    static TYPE_FLOAT = 2;
-
-    path: string;
-    stats: {
-        min: number,
-        max: number,
-        type: number,
-        count: number,
-        // map key paths to their cardinalities
-        map: Object,
-    };
-
-    get type(): number {
-        return this.stats.type;
-    }
-
-    set type(type: number) {
-        this.stats.type = type;
-    }
-
-    constructor(path: string) {
-        this.path = path;
-        this.stats = {
-            min: 0,
-            max: 0,
-            type: Path.TYPE_INTEGER,
-            count: 0,
-            // map key paths to their cardinalities
-            map: {},
-        };
-    }
-
-    saveProperType(value: any) {
-        if (typeof value == 'string') {
-            var valNumeric = parseFloat(value);
-            var rounded = Math.round(valNumeric);
-            if (isNaN(valNumeric)) {
-                this.type = Path.TYPE_STRING;
-                return value;
-            } else if (rounded != valNumeric) {
-                this.type = Path.TYPE_FLOAT;
-                return valNumeric;
-            } else {
-                return rounded;
-            }
-        }
-        return value;
-    }
-
-    numerics(value: any) {
-        this.stats.min = Math.min(value, this.stats.min);
-        this.stats.max = Math.max(value, this.stats.max);
-    }
-
-    foundValue(value: any) {
-        // increment count
-        this.stats.count++;
-
-        // increase cardinality
-        this.stats.map[value] = this.stats.hasOwnProperty(value) ? this.stats.map[value] + 1 : 1;
-
-        // Calculate numeric-only properties
-        if (this.type != Path.TYPE_STRING) {
-            value = this.saveProperType(value);
-
-            if (this.type != Path.TYPE_STRING) {
-                this.numerics(value);
-            }
-        }
-    }
-
-    percentUnique(): number {
-        return Object.keys(this.stats.map).length / this.stats.count * 100;
-    }
-}
+/// <reference path="../contracts/data.type.ts"/>
+/// <reference path="../contracts/data.path.ts"/>
 
 module gwi {
+    function mapXPaths(xPaths: Array<string>): Array<Data.Path> {
+        return _.map(xPaths, (path: string) => {
+            return new Data.Path(path);
+        });
+    }
+
     export class DataTypeService {
+        static TYPE_UNS_SHORT_INT = 0;
+        static TYPE_SHORT_INT = 1;
+        static TYPE_UNS_INT = 2;
+        static TYPE_INT = 3;
+        static TYPE_ENUM = 4;
+        static TYPE_FLOAT = 5;
+        static TYPE_STRING = 6;
+
+        static types = [
+            new Data.Type('Unsigned Short Integer', 'unsigned short int'),
+            new Data.Type('Short Integer', 'short int'),
+            new Data.Type('Unsigned Integer', 'unsigned int'),
+            new Data.Type('Integer', 'int'),
+            new Data.Type('Factors', 'factor'),
+            new Data.Type('Float', 'long double'),
+            new Data.Type('String', 'string'),
+        ];
 
         static $inject = [];
         constructor() {
 
         }
 
-        getTypes(data: Array<Object>, xPaths: Array<string>) {
-            var paths = _.map(xPaths, (path: string) => {
-                return new Path(path);
-            });
+        allowedTypes(): Array<Data.Type> {
+            return DataTypeService.types;
+        }
+
+        getTypes(data: Array<Object>, xPaths: Array<string>): Array<Data.Type> {
+            var paths = mapXPaths(xPaths);
 
             _.each(data, (row: Object) => {
-                _.each(paths, (path: Path) => {
-                    var item = _.get(row, path.path);
+                _.each(paths, (path: Data.Path) => {
+                    var item = _.get(row, path.path, null);
 
                     path.foundValue(item);
                 });
             });
 
-            return _.map(paths, (path: Path) => {
+            var types = this.allowedTypes();
+            return _(paths).map((path: Data.Path) => {
                 switch (path.type) {
-                    case Path.TYPE_INTEGER:
+                    case Data.Path.RAW_TYPE_INTEGER:
                         var min = path.stats.min;
                         var max = path.stats.max;
                         if (min < 0) {
-                            return (max > 32767 || min < -32768) ? 'int' : 'short int';
+                            return (max > 32767 || min < -32768)
+                                 ? types[DataTypeService.TYPE_INT]
+                                 : types[DataTypeService.TYPE_SHORT_INT]
+                                 ;
                         }
 
-                        return max > 65535 ? 'unsigned int' : 'unsigned short int';
-                    case Path.TYPE_FLOAT:
-                        return 'long double';
-                    case Path.TYPE_STRING:
-                        if (path.percentUnique() < 21)
-                            return 'factors';
-                        return 'string';
+                        return max > 65535
+                             ? types[DataTypeService.TYPE_UNS_INT]
+                             : types[DataTypeService.TYPE_UNS_SHORT_INT]
+                             ;
+                    case Data.Path.RAW_TYPE_FLOAT:
+                        return types[DataTypeService.TYPE_FLOAT];
                     default:
-                        return 'empty';
+                        if (path.percentUnique() < 21)
+                            return types[DataTypeService.TYPE_ENUM];
+                        return types[DataTypeService.TYPE_STRING];
                 }
-            });
+            }).map((generic: Data.Type, key: number) => {
+                var path = paths[key];
+                var type = new Data.Type(generic.name, generic.grokitName);
+                type.nullable = path.stats.hasNull;
+                return type;
+            }).value();
         }
     }
 

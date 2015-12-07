@@ -1,10 +1,7 @@
 /// <reference path="../services/import.service.ts"/>
+/// <reference path="../contracts/data.type.ts"/>
 
 module gwi {
-    interface ExportModalScope extends ng.IScope {
-        code: string
-    }
-
     interface Modal {
         open: Function
     }
@@ -41,6 +38,10 @@ module gwi {
         $scope: ng.IScope;
         $modal: Modal;
         Import: gwi.ImportService;
+        DataType: gwi.DataTypeService;
+        types: {
+            [xpath: string]: Data.Type;
+        };
         editing: string;
 
         get root(): Object {
@@ -55,12 +56,14 @@ module gwi {
             return this._tree;
         }
 
-        static $inject = ['$rootScope', '$uibModal', 'gwi.ImportService'];
-        constructor($scope: ng.IScope, $modal: Modal, Import: gwi.ImportService) {
+        static $inject = ['$rootScope', '$uibModal', 'gwi.ImportService', 'gwi.DataTypeService'];
+        constructor($scope: ng.IScope, $modal: Modal, Import: gwi.ImportService, DataType: gwi.DataTypeService) {
             this.$scope = $scope;
             this.$modal = $modal;
             this.Import = Import;
+            this.DataType = DataType;
             this.editing = "";
+            this.types = {};
             this.importLatest();
         }
 
@@ -81,16 +84,33 @@ module gwi {
         }
 
         exportCode() {
-            var scope = <ExportModalScope>this.$scope.$new();
-            scope.code = "Sample R Export code";
             this.$modal.open({
+                controller: 'gwi.ExportModalController',
                 templateUrl: 'views/modal-export-code.html',
-                scope: scope
             });
         }
 
         colBeingEdited(): string {
             return this.editing;
+        }
+
+        allowedTypes(): Array<Data.Type> {
+            return this.DataType.allowedTypes();
+        }
+
+        typeBeingEdited(cb?: Function): Data.Type {
+            var col = this.colBeingEdited();
+
+            if (this.types.hasOwnProperty(col)) {
+                _.defer(cb, this.types[col]);
+                return this.types[col];
+            }
+
+            var type = this.types[col] = new Data.Type("Loading...", "Loading");
+            setTimeout(() => {
+                cb(_.extend(type, this.DataType.getTypes(this.current, [col])[0]));
+            }, 50);
+            return type;
         }
     }
 

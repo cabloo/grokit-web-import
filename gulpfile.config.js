@@ -18,6 +18,7 @@ var GulpConfig = (function () {
             APP + '/*.ts',
             APP + '/controllers/*.ts',
             APP + '/services/*.ts',
+            APP + '/contracts/*.ts',
             APP + '/directives/*.ts'
         ];
 
