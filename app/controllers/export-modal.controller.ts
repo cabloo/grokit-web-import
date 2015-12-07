@@ -41,7 +41,7 @@ module gwi {
                 .then((columns: Array<Data.Column>) => {
                     this.$scope.code = "";
                     _.each(columns, (column: Data.Column) => {
-                        this.$scope.code += column.name + ": " + column.type.name + " (" +
+                        this.$scope.code += column.name + ": " + column.type.grokitName + " (" +
                             (column.type.nullable ? 'nullable' : 'not nullable')
                         + ")\n";
                     });
