@@ -7,13 +7,26 @@
                         Browse
                     </h3>
                 </div>
-                <div class="panel-body scrollable tree-view" scroll-limit="thisPage in tree.current">
-                    <div>
-                        <div ng-repeat="object in thisPage">
-                            <json-tree
-                                object="object"
-                                ng-click="chooseNode($event)"
-                            ></json-tree>
+                <div ng-if="!parentChosen">
+                    <ul class="parent-node-choices">
+                        <li ng-repeat="(key, name) in parentNodeChoices">
+                            <a ng-click="chooseParentNode(key)">
+                                {{name}}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div ng-if="parentChosen">
+                    <div class="panel-body scrollable tree-view"
+                        scroll-limit="thisPage in tree.current"
+                        row-height="22">
+                        <div>
+                            <div ng-repeat="object in thisPage">
+                                <json-tree
+                                    object="object"
+                                    ng-click="chooseNode($event)"
+                                ></json-tree>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -32,15 +45,7 @@
 
                 <div class="text-center panel-body" ng-show="!columns.length">
                     <div ng-show="!parentChosen">
-                        Select the parent node (the one that contains the array of data):
-
-                        <ul class="parent-node-choices">
-                            <li ng-repeat="(key, name) in parentNodeChoices">
-                                <a ng-click="chooseParentNode(key)">
-                                    {{name}}
-                                </a>
-                            </li>
-                        </ul>
+                        Select the parent node (the one that contains the array of data) from the list on the left.
                     </div>
                     <div ng-show="parentChosen">
                         Select an attribute to export in the tree on the left.
@@ -48,12 +53,12 @@
                 </div>
 
                 <div class="table-fixed-header fill-panel overview">
-                    <table class="table table-striped table-bordered table-fixed-header-top" ng-show="page.columns.length">
+                    <table class="table table-striped table-bordered table-fixed-header-top" ng-show="columns.length">
                         <thead>
                             <tr id="header-container">
-                                <th ng-repeat="(key, col) in columns" uib-tooltip="{{col}}" tooltip-placement="bottom">
+                                <th ng-repeat="(key, col) in columns" uib-tooltip="{{col.name}}" tooltip-placement="bottom">
                                     <span class="th-text">
-                                        {{ col }}
+                                        {{ col.name }}
                                     </span>
                                     <span class="th-btns">
                                         <a ng-click="editColumn(key)" class="no-underline">
@@ -67,12 +72,13 @@
                             </tr>
                         </thead>
                     </table>
-                    <div class="scrollable table-view" id="table-scroller" scroll-limit="dataRows in rows">
-                        <div><table class="table table-striped table-bordered" ng-show="page.columns.length">
+                    <div class="scrollable table-view" id="table-scroller"
+                        scroll-limit="dataRows in rows" row-height="37">
+                        <div><table class="table table-striped table-bordered" ng-show="columns.length">
                             <tbody id="data-container">
                                 <tr ng-repeat="row in dataRows">
-                                    <td ng-repeat="col in columns" ng-class="{disabled: !getRowItem(row, col)}">
-                                        {{ getRowItem(row, col) || 'null' }}
+                                    <td ng-repeat="col in columns" ng-class="{disabled: !getRowItem(row, col.name)}">
+                                        {{ getRowItem(row, col.name) || 'null' }}
                                     </td>
                                 </tr>
                             </tbody>
@@ -84,7 +90,7 @@
                     Found {{ rows.length }} items.
                 </div>
 
-                <button class="btn btn-success btn-full" ng-click="exportCode()">Send to Grokit</button>
+                <button class="btn btn-success btn-full" ng-click="exportCode()" ng-show="parentChosen">Send to Grokit</button>
             </div>
         </div>
     </div>
