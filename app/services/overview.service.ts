@@ -10,6 +10,7 @@ module gwi {
     class Tree {
         _root: Object;
         _curr: Array<Object>;
+        rootPath: string;
 
         get current(): Array<Object> {
             return this._curr;
@@ -18,6 +19,7 @@ module gwi {
         set root(tree: Object) {
             this._root = tree;
             this._curr = _.isArray(this._root) ? <Array<Object>>this._root : [];
+            this.rootPath = "";
         }
 
         get root(): Object {
@@ -29,6 +31,7 @@ module gwi {
         }
 
         setCurrentRoot(name: string) {
+            this.rootPath = name;
             this._curr = <Array<Object>>
                 (name == "" ? this._root : _.get(this._root, name));
         }
@@ -41,6 +44,7 @@ module gwi {
         $q: ng.IQService;
         $scope: ng.IScope;
         $modal: Modal;
+        $location: ng.ILocationService;
         Import: gwi.ImportService;
         DataType: gwi.DataTypeService;
         types: {
@@ -48,6 +52,7 @@ module gwi {
         };
         editing: Data.Column;
         columns: Array<Data.Column>;
+        fileType: string;
 
         get root(): Object {
             return this._tree.root;
@@ -61,11 +66,12 @@ module gwi {
             return this._tree;
         }
 
-        static $inject = ['$rootScope', '$uibModal', '$q', 'gwi.ImportService', 'gwi.DataTypeService'];
-        constructor($scope: ng.IScope, $modal: Modal, $q: ng.IQService, Import: gwi.ImportService, DataType: gwi.DataTypeService) {
+        static $inject = ['$rootScope', '$uibModal', '$q', 'gwi.ImportService', 'gwi.DataTypeService', '$location'];
+        constructor($scope: ng.IScope, $modal: Modal, $q: ng.IQService, Import: gwi.ImportService, DataType: gwi.DataTypeService, $location: ng.ILocationService) {
             this.$q = $q;
             this.$scope = $scope;
             this.$modal = $modal;
+            this.$location = $location;
             this.Import = Import;
             this.DataType = DataType;
             this.editing = null;
@@ -75,6 +81,10 @@ module gwi {
         }
 
         importLatest() {
+            this.fileType = this.Import.fileType;
+            if (!this.fileType) {
+                this.$location.path('/import');
+            }
             this._tree = new Tree(this.Import.object);
         }
 
@@ -136,11 +146,12 @@ module gwi {
 
             return this.DataType.getTypes(this.current, neededCols)
                 .then((types: Array<Data.Type>) => {
+                    console.log('test2');
                     _.each(types, (type: Data.Type, key: number) => {
                         var column = this.findColumn(neededCols[key]);
                         this.setColumnType(column, type);
                     });
-                    _.defer(this.$scope.$apply.bind(this.$scope));
+                    setTimeout(this.$scope.$apply.bind(this.$scope), 10);
 
                     return this.columns;
                 });
@@ -163,6 +174,10 @@ module gwi {
             }, 50);
 
             return column.type;
+        }
+
+        getPathToRows(): string {
+            return this.tree.rootPath;
         }
     }
 

@@ -2,6 +2,10 @@
 /// <reference path="../contracts/data.type.ts"/>
 
 module gwi {
+    function xpath(path: string): string {
+        return path.replace(/\./g, '/');
+    }
+
     interface Column {
         path: string,
         type: Data.Type,
@@ -36,15 +40,31 @@ module gwi {
             setTimeout(this.loadCode.bind(this), 50);
         }
 
+        colToType(column: Data.Column) {
+            return column.name.split('.').pop() + "=" + column.type.grokitName;
+            /* + " (" +
+                (column.type.nullable ? 'nullable' : 'not nullable')
+            + ")\n";*/
+        }
+
+        colToPath(column: Data.Column) {
+            return "'/" + xpath(column.name) + "'";
+        }
+
         loadCode() {
             this.Overview.getColsWithTypes()
                 .then((columns: Array<Data.Column>) => {
-                    this.$scope.code = "";
-                    _.each(columns, (column: Data.Column) => {
-                        this.$scope.code += column.name + ": " + column.type.grokitName + " (" +
-                            (column.type.nullable ? 'nullable' : 'not nullable')
-                        + ")\n";
-                    });
+                    var funcName = "Read" + this.Overview.fileType;
+                    var rootPath = xpath(this.Overview.getPathToRows());
+                    var colToType = this.colToType.bind(this);
+                    var colToPath = this.colToPath.bind(this);
+                    var args = [
+                        "'<full path to data file>'",
+                        'c(' + _.map(columns, colToType).join(',') + ')',
+                        "'" + rootPath + "'",
+                        'c(' + _.map(columns, colToPath).join(',') + ')',
+                    ];
+                    this.$scope.code = funcName + "(" + args.join(',') + ")";
                     this.$applyDeferred();
                 });
         }

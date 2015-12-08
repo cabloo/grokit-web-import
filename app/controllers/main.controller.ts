@@ -61,6 +61,7 @@ module gwi {
 
         setupScope() {
             this.Overview.importLatest();
+
             this.$scope.tree = this.Overview.tree;
             this.$scope.rows = [];
             this.$scope.columns = this.Overview.columns;

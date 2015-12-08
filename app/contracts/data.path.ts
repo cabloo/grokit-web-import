@@ -14,7 +14,7 @@ module Data {
             count: number,
             hasNull: boolean,
             // map key paths to their cardinalities
-            map: Object,
+            //map: Object,
         };
 
         get type(): number {
@@ -34,7 +34,7 @@ module Data {
                 count: 0,
                 hasNull: false,
                 // map key paths to their cardinalities
-                map: {},
+            //    map: {},
             };
         }
 
@@ -69,7 +69,7 @@ module Data {
             this.stats.count++;
 
             // increase cardinality
-            this.stats.map[value] = this.stats.hasOwnProperty(value) ? this.stats.map[value] + 1 : 1;
+            //this.stats.map[value] = this.stats.hasOwnProperty(value) ? this.stats.map[value] + 1 : 1;
 
             // Calculate numeric-only properties
             if (this.type != Path.RAW_TYPE_STRING) {
@@ -82,7 +82,7 @@ module Data {
         }
 
         percentUnique(): number {
-            return Object.keys(this.stats.map).length / this.stats.count * 100;
+            return 100;//Object.keys(this.stats.map).length / this.stats.count * 100;
         }
     }
 }

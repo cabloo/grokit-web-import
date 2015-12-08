@@ -18,7 +18,6 @@ module gwi {
         var dom = null;
         if (window.hasOwnProperty("DOMParser")) {
             dom = (new DOMParser()).parseFromString(xml, "text/xml");
-            console.log('tes1');
         }
         else if (window.hasOwnProperty("ActiveXObject")) {
             dom = new ActiveXObject('Microsoft.XMLDOM');
@@ -26,7 +25,6 @@ module gwi {
             if (!dom.loadXML(xml)) {
                 throw dom.parseError.reason + " " + dom.parseError.srcText;
             }
-            console.log('tes2');
         }
         else {
             throw "cannot parse xml string!";
@@ -93,37 +91,15 @@ module gwi {
         $location: ng.ILocationService;
         reader: FileReader;
         cb: Function;
+        fileType: string;
 
         static $inject = ['$location', '$rootScope', 'toastr'];
         constructor($location: ng.ILocationService, $rootScope: ng.IScope, toastr: Toastr) {
             this.$location = $location;
             this.$scope = $rootScope;
             this.toastr = toastr;
-            this.object = {
-                "test": "useless data",
-                "test2": ["more useless data", "junk"],
-                "nested": {
-                    "items": [
-                        {
-                            "test": "From Item 1",
-                            "a": "a"
-                        },
-                        {
-                            "test": "From Item 2",
-                            "deeply": {
-                                "nested": {
-                                    "items": "work"
-                                }
-                            }
-                        },
-                        {
-                            "test": "From Item 3",
-                            "a": "b",
-                            "c": "d"
-                        }
-                    ]
-                }
-            };
+            this.object = {};
+            this.fileType = "";
 
             this.setupReader();
 
@@ -166,6 +142,7 @@ module gwi {
          * @throws JSON Exception
          */
         getJson(target: Import.Target) {
+            this.fileType = 'JSON';
             return JSON.parse(target.result);
         }
 
@@ -179,6 +156,7 @@ module gwi {
          * @throws XML Exception
          */
         getXml(target: Import.Target) {
+            this.fileType = 'XML';
             return parseXml(target.result);
         }
 
@@ -192,6 +170,7 @@ module gwi {
          * @throws YAML Exception
          */
         getYaml(target: Import.Target) {
+            this.fileType = 'YAML';
             return jsyaml.load(target.result);
         }
 
